@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitFlow</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+
+    <!-- ШАПКА -->
+    <header>
+        <div class="logo">✅ HabitFlow</div>
+        <div class="header-controls">
+            <div class="theme-switcher">
+                <button class="theme-btn" data-theme="light" onclick="setTheme('light')">☀️</button>
+                <button class="theme-btn active" data-theme="dark" onclick="setTheme('dark')">🌙</button>
+                <button class="theme-btn" data-theme="cosmic" onclick="setTheme('cosmic')">🚀</button>
+            </div>
+            <div id="user-info">
+                <span id="username-display"></span>
+                <button id="logout-btn" style="display:none;" onclick="logout()">Выйти</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- АВТОРИЗАЦИЯ -->
+    <div id="auth-section" class="container">
+        <div class="auth-box" id="login-box">
+            <h2>🔐 Вход</h2>
+            <input type="text" id="login-username" placeholder="Имя пользователя">
+            <input type="password" id="login-password" placeholder="Пароль">
+            <button onclick="login()">Войти</button>
+            <p class="switch-link">Нет аккаунта? <span onclick="switchToRegister()">Зарегистрируйтесь</span></p>
+        </div>
+        <div class="auth-box" id="register-box" style="display:none;">
+            <h2>📝 Регистрация</h2>
+            <input type="text" id="register-username" placeholder="Имя пользователя">
+            <input type="password" id="register-password" placeholder="Пароль">
+            <button onclick="register()">Зарегистрироваться</button>
+            <p class="switch-link">Уже есть аккаунт? <span onclick="switchToLogin()">Войти</span></p>
+        </div>
+    </div>
+
+    <!-- ОСНОВНАЯ СТРАНИЦА -->
+    <div id="habits-section" class="container" style="display:none;">
+
+        <!-- Форма добавления -->
+        <div class="add-habit-form">
+            <input type="text" id="new-habit-name" placeholder="Название привычки">
+            <input type="text" id="new-habit-desc" placeholder="Описание">
+            <select id="new-habit-category">
+                <option value="Здоровье">Здоровье</option>
+                <option value="Учёба">Учёба</option>
+                <option value="Спорт">Спорт</option>
+                <option value="Личное">Личное</option>
+                <option value="Другое">Другое</option>
+            </select>
+            <div class="icon-picker">
+                <span>Иконка:</span>
+                <button class="icon-btn" data-icon="📚" onclick="selectIcon(this)">📚</button>
+                <button class="icon-btn" data-icon="🏋️" onclick="selectIcon(this)">🏋️</button>
+                <button class="icon-btn" data-icon="💧" onclick="selectIcon(this)">💧</button>
+                <button class="icon-btn" data-icon="🧘" onclick="selectIcon(this)">🧘</button>
+                <button class="icon-btn" data-icon="📝" onclick="selectIcon(this)">📝</button>
+                <button class="icon-btn" data-icon="🎯" onclick="selectIcon(this)">🎯</button>
+                <button class="icon-btn" data-icon="🎨" onclick="selectIcon(this)">🎨</button>
+                <button class="icon-btn" data-icon="📖" onclick="selectIcon(this)">📖</button>
+            </div>
+            <input type="hidden" id="selected-icon" value="📚">
+            <button onclick="addHabit()">➕ Добавить</button>
+        </div>
+
+        <!-- Фильтр -->
+        <div class="filter-section">
+            <button class="filter-btn active" data-category="all" onclick="filterHabits('all')">Все</button>
+            <button class="filter-btn" data-category="Здоровье" onclick="filterHabits('Здоровье')">Здоровье</button>
+            <button class="filter-btn" data-category="Учёба" onclick="filterHabits('Учёба')">Учёба</button>
+            <button class="filter-btn" data-category="Спорт" onclick="filterHabits('Спорт')">Спорт</button>
+            <button class="filter-btn" data-category="Личное" onclick="filterHabits('Личное')">Личное</button>
+            <button class="filter-btn" data-category="Другое" onclick="filterHabits('Другое')">Другое</button>
+        </div>
+
+        <!-- Список привычек -->
+        <div id="habits-list">
+            <p class="empty-msg">У вас пока нет привычек. Добавьте первую!</p>
+        </div>
+
+        <!-- Статистика -->
+        <div id="stats-section">
+            <h3>📊 Статистика за неделю</h3>
+            <div id="stats-content">Выберите привычку для просмотра статистики.</div>
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

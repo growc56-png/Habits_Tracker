@@ -1,0 +1,759 @@
+/* ===== БАЗОВЫЕ СТИЛИ ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+}
+.app-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ===== ШАПКА ===== */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.logo {
+    font-size: 26px;
+    font-weight: 700;
+}
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.theme-switcher {
+    display: flex;
+    gap: 4px;
+}
+.theme-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s;
+    background: transparent;
+}
+.theme-btn.active {
+    background: rgba(255, 255, 255, 0.15);
+}
+#user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+#username-display {
+    font-weight: 600;
+}
+#logout-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* ===== АВТОРИЗАЦИЯ ===== */
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+.auth-box {
+    max-width: 420px;
+    margin: 40px auto;
+    padding: 32px 28px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+.auth-box h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+.auth-box input {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    font-size: 16px;
+    transition: 0.2s;
+    background: transparent;
+}
+.auth-box input:focus {
+    outline: none;
+    border-color: #6c5ce7;
+}
+.auth-box button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.switch-link {
+    margin-top: 14px;
+    font-size: 14px;
+}
+.switch-link span {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* ===== ФОРМА ДОБАВЛЕНИЯ ===== */
+.add-habit-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px 24px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    align-items: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.add-habit-form input,
+.add-habit-form select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    font-size: 14px;
+    flex: 1 1 140px;
+    background: transparent;
+    transition: 0.2s;
+}
+.add-habit-form input:focus,
+.add-habit-form select:focus {
+    outline: none;
+    border-color: #6c5ce7;
+}
+.icon-picker {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.icon-picker span {
+    font-size: 14px;
+    margin-right: 4px;
+}
+.icon-btn {
+    font-size: 20px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    background: transparent;
+}
+.icon-btn.selected {
+    border-color: #6c5ce7;
+    background: rgba(108, 92, 231, 0.15);
+}
+.add-habit-form button[type="button"] {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* ===== ФИЛЬТР ===== */
+.filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+.filter-btn {
+    border: none;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.filter-btn.active {
+    font-weight: 600;
+}
+
+/* ===== КАРТОЧКА ПРИВЫЧКИ ===== */
+.habit-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: 0.2s;
+}
+.habit-card:hover {
+    transform: translateX(4px);
+}
+.habit-icon {
+    font-size: 32px;
+    width: 48px;
+    text-align: center;
+}
+.habit-info {
+    flex: 1;
+}
+.habit-info h3 {
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.habit-info .category {
+    font-size: 12px;
+    padding: 2px 12px;
+    border-radius: 12px;
+}
+.habit-info .description {
+    font-size: 14px;
+    margin-top: 4px;
+    opacity: 0.7;
+}
+.habit-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 130px;
+}
+.streak {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+.progress-bar {
+    width: 80px;
+    height: 6px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+.habit-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.checkbox {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s;
+    background: transparent;
+}
+.checkbox.done {
+    border-color: #00b894;
+}
+.delete-btn {
+    border: none;
+    font-size: 20px;
+    padding: 4px;
+    cursor: pointer;
+    background: transparent;
+}
+
+/* ===== СТАТИСТИКА ===== */
+#stats-section {
+    margin-top: 30px;
+    padding: 20px 24px;
+    border-radius: 16px;
+    text-align: center;
+}
+#stats-section h3 {
+    margin-bottom: 12px;
+}
+.stats-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 10px;
+}
+.stats-day {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+.stats-day.done {
+    border: 2px solid #00b894;
+}
+.stats-day.fail {
+    border: 2px solid #e74c3c;
+}
+
+.empty-msg {
+    text-align: center;
+    padding: 30px 0;
+    opacity: 0.6;
+}
+
+/* ===== ТЕМЫ ===== */
+
+/* --- ТЁМНАЯ (по умолчанию) --- */
+[data-theme="dark"] body {
+    background: #0d0d1a;
+    color: #eee;
+}
+[data-theme="dark"] header {
+    background: #1a1a2e;
+}
+[data-theme="dark"] .logo {
+    color: #a29bfe;
+}
+[data-theme="dark"] .theme-btn {
+    color: #aaa;
+}
+[data-theme="dark"] .theme-btn.active {
+    background: rgba(255,255,255,0.1);
+}
+[data-theme="dark"] #username-display {
+    color: #a29bfe;
+}
+[data-theme="dark"] #logout-btn {
+    background: #e74c3c;
+    color: #fff;
+}
+[data-theme="dark"] #logout-btn:hover {
+    background: #c0392b;
+}
+[data-theme="dark"] .auth-box {
+    background: #1a1a2e;
+}
+[data-theme="dark"] .auth-box input {
+    border-color: #333;
+    color: #eee;
+}
+[data-theme="dark"] .auth-box input:focus {
+    border-color: #6c5ce7;
+}
+[data-theme="dark"] .auth-box button {
+    background: #6c5ce7;
+    color: #fff;
+}
+[data-theme="dark"] .auth-box button:hover {
+    background: #5a4bd1;
+}
+[data-theme="dark"] .switch-link span {
+    color: #a29bfe;
+}
+[data-theme="dark"] .add-habit-form {
+    background: #1a1a2e;
+}
+[data-theme="dark"] .add-habit-form input,
+[data-theme="dark"] .add-habit-form select {
+    border-color: #333;
+    color: #eee;
+}
+[data-theme="dark"] .add-habit-form input:focus,
+[data-theme="dark"] .add-habit-form select:focus {
+    border-color: #6c5ce7;
+}
+[data-theme="dark"] .icon-btn {
+    color: #aaa;
+}
+[data-theme="dark"] .icon-btn.selected {
+    border-color: #6c5ce7;
+    background: rgba(108, 92, 231, 0.2);
+}
+[data-theme="dark"] .add-habit-form button[type="button"] {
+    background: #00b894;
+    color: #fff;
+}
+[data-theme="dark"] .add-habit-form button[type="button"]:hover {
+    background: #00a381;
+}
+[data-theme="dark"] .filter-btn {
+    background: #2d2d44;
+    color: #ccc;
+}
+[data-theme="dark"] .filter-btn.active {
+    background: #6c5ce7;
+    color: #fff;
+}
+[data-theme="dark"] .habit-card {
+    background: #1a1a2e;
+}
+[data-theme="dark"] .habit-info h3 {
+    color: #eee;
+}
+[data-theme="dark"] .habit-info .category {
+    background: #2d2d44;
+    color: #aaa;
+}
+[data-theme="dark"] .habit-info .description {
+    color: #888;
+}
+[data-theme="dark"] .streak {
+    color: #fdcb6e;
+}
+[data-theme="dark"] .progress-bar {
+    background: #2d2d44;
+}
+[data-theme="dark"] .progress-fill {
+    background: #00b894;
+}
+[data-theme="dark"] .checkbox {
+    border-color: #555;
+    color: #555;
+}
+[data-theme="dark"] .checkbox.done {
+    background: #00b894;
+    border-color: #00b894;
+    color: #fff;
+}
+[data-theme="dark"] .delete-btn {
+    color: #e74c3c;
+}
+[data-theme="dark"] .delete-btn:hover {
+    color: #ff6b6b;
+}
+[data-theme="dark"] #stats-section {
+    background: #1a1a2e;
+}
+[data-theme="dark"] .stats-day {
+    background: #2d2d44;
+    color: #ccc;
+}
+[data-theme="dark"] .stats-day.done {
+    border-color: #00b894;
+}
+[data-theme="dark"] .stats-day.fail {
+    border-color: #e74c3c;
+}
+
+/* --- СВЕТЛАЯ --- */
+[data-theme="light"] body {
+    background: #f0f2f5;
+    color: #222;
+}
+[data-theme="light"] header {
+    background: #fff;
+}
+[data-theme="light"] .logo {
+    color: #6c5ce7;
+}
+[data-theme="light"] .theme-btn {
+    color: #555;
+}
+[data-theme="light"] .theme-btn.active {
+    background: rgba(0,0,0,0.06);
+}
+[data-theme="light"] #username-display {
+    color: #6c5ce7;
+}
+[data-theme="light"] #logout-btn {
+    background: #e74c3c;
+    color: #fff;
+}
+[data-theme="light"] #logout-btn:hover {
+    background: #c0392b;
+}
+[data-theme="light"] .auth-box {
+    background: #fff;
+}
+[data-theme="light"] .auth-box input {
+    border-color: #ddd;
+    color: #222;
+}
+[data-theme="light"] .auth-box input:focus {
+    border-color: #6c5ce7;
+}
+[data-theme="light"] .auth-box button {
+    background: #6c5ce7;
+    color: #fff;
+}
+[data-theme="light"] .auth-box button:hover {
+    background: #5a4bd1;
+}
+[data-theme="light"] .switch-link span {
+    color: #6c5ce7;
+}
+[data-theme="light"] .add-habit-form {
+    background: #fff;
+}
+[data-theme="light"] .add-habit-form input,
+[data-theme="light"] .add-habit-form select {
+    border-color: #ddd;
+    color: #222;
+}
+[data-theme="light"] .add-habit-form input:focus,
+[data-theme="light"] .add-habit-form select:focus {
+    border-color: #6c5ce7;
+}
+[data-theme="light"] .icon-btn {
+    color: #555;
+}
+[data-theme="light"] .icon-btn.selected {
+    border-color: #6c5ce7;
+    background: rgba(108, 92, 231, 0.1);
+}
+[data-theme="light"] .add-habit-form button[type="button"] {
+    background: #00b894;
+    color: #fff;
+}
+[data-theme="light"] .add-habit-form button[type="button"]:hover {
+    background: #00a381;
+}
+[data-theme="light"] .filter-btn {
+    background: #e8e8e8;
+    color: #444;
+}
+[data-theme="light"] .filter-btn.active {
+    background: #6c5ce7;
+    color: #fff;
+}
+[data-theme="light"] .habit-card {
+    background: #fff;
+}
+[data-theme="light"] .habit-info h3 {
+    color: #222;
+}
+[data-theme="light"] .habit-info .category {
+    background: #eee;
+    color: #666;
+}
+[data-theme="light"] .habit-info .description {
+    color: #888;
+}
+[data-theme="light"] .streak {
+    color: #e67e22;
+}
+[data-theme="light"] .progress-bar {
+    background: #e0e0e0;
+}
+[data-theme="light"] .progress-fill {
+    background: #00b894;
+}
+[data-theme="light"] .checkbox {
+    border-color: #ccc;
+}
+[data-theme="light"] .checkbox.done {
+    background: #00b894;
+    border-color: #00b894;
+    color: #fff;
+}
+[data-theme="light"] .delete-btn {
+    color: #e74c3c;
+}
+[data-theme="light"] .delete-btn:hover {
+    color: #c0392b;
+}
+[data-theme="light"] #stats-section {
+    background: #fff;
+}
+[data-theme="light"] .stats-day {
+    background: #f0f0f0;
+    color: #333;
+}
+[data-theme="light"] .stats-day.done {
+    border-color: #00b894;
+}
+[data-theme="light"] .stats-day.fail {
+    border-color: #e74c3c;
+}
+
+/* --- КОСМИЧЕСКАЯ --- */
+[data-theme="cosmic"] body {
+    background: #0b0b1a;
+    color: #d4d4f7;
+}
+[data-theme="cosmic"] header {
+    background: linear-gradient(135deg, #0d0d2b, #1a0a2e);
+}
+[data-theme="cosmic"] .logo {
+    color: #ff6bff;
+}
+[data-theme="cosmic"] .theme-btn {
+    color: #a78bfa;
+}
+[data-theme="cosmic"] .theme-btn.active {
+    background: rgba(167, 139, 250, 0.15);
+}
+[data-theme="cosmic"] #username-display {
+    color: #ff6bff;
+}
+[data-theme="cosmic"] #logout-btn {
+    background: #e74c3c;
+    color: #fff;
+}
+[data-theme="cosmic"] #logout-btn:hover {
+    background: #c0392b;
+}
+[data-theme="cosmic"] .auth-box {
+    background: linear-gradient(145deg, #12123a, #1a0a2e);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+}
+[data-theme="cosmic"] .auth-box input {
+    border-color: #333366;
+    color: #d4d4f7;
+}
+[data-theme="cosmic"] .auth-box input:focus {
+    border-color: #a78bfa;
+}
+[data-theme="cosmic"] .auth-box button {
+    background: linear-gradient(135deg, #6c5ce7, #a78bfa);
+    color: #fff;
+}
+[data-theme="cosmic"] .auth-box button:hover {
+    opacity: 0.85;
+}
+[data-theme="cosmic"] .switch-link span {
+    color: #a78bfa;
+}
+[data-theme="cosmic"] .add-habit-form {
+    background: linear-gradient(145deg, #12123a, #1a0a2e);
+    border: 1px solid rgba(167, 139, 250, 0.15);
+}
+[data-theme="cosmic"] .add-habit-form input,
+[data-theme="cosmic"] .add-habit-form select {
+    border-color: #333366;
+    color: #d4d4f7;
+}
+[data-theme="cosmic"] .add-habit-form input:focus,
+[data-theme="cosmic"] .add-habit-form select:focus {
+    border-color: #a78bfa;
+}
+[data-theme="cosmic"] .icon-btn {
+    color: #a78bfa;
+}
+[data-theme="cosmic"] .icon-btn.selected {
+    border-color: #a78bfa;
+    background: rgba(167, 139, 250, 0.15);
+}
+[data-theme="cosmic"] .add-habit-form button[type="button"] {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    color: #fff;
+}
+[data-theme="cosmic"] .add-habit-form button[type="button"]:hover {
+    opacity: 0.85;
+}
+[data-theme="cosmic"] .filter-btn {
+    background: #1a1a3e;
+    color: #a78bfa;
+}
+[data-theme="cosmic"] .filter-btn.active {
+    background: linear-gradient(135deg, #6c5ce7, #a78bfa);
+    color: #fff;
+}
+[data-theme="cosmic"] .habit-card {
+    background: linear-gradient(145deg, #12123a, #1a0a2e);
+    border: 1px solid rgba(167, 139, 250, 0.1);
+}
+[data-theme="cosmic"] .habit-info h3 {
+    color: #d4d4f7;
+}
+[data-theme="cosmic"] .habit-info .category {
+    background: #1a1a3e;
+    color: #a78bfa;
+}
+[data-theme="cosmic"] .habit-info .description {
+    color: #8888bb;
+}
+[data-theme="cosmic"] .streak {
+    color: #fcd34d;
+}
+[data-theme="cosmic"] .progress-bar {
+    background: #1a1a3e;
+}
+[data-theme="cosmic"] .progress-fill {
+    background: linear-gradient(90deg, #a78bfa, #ff6bff);
+}
+[data-theme="cosmic"] .checkbox {
+    border-color: #555588;
+}
+[data-theme="cosmic"] .checkbox.done {
+    background: linear-gradient(135deg, #a78bfa, #ff6bff);
+    border-color: #a78bfa;
+    color: #fff;
+}
+[data-theme="cosmic"] .delete-btn {
+    color: #ff6b6b;
+}
+[data-theme="cosmic"] .delete-btn:hover {
+    color: #ff4757;
+}
+[data-theme="cosmic"] #stats-section {
+    background: linear-gradient(145deg, #12123a, #1a0a2e);
+    border: 1px solid rgba(167, 139, 250, 0.15);
+}
+[data-theme="cosmic"] .stats-day {
+    background: #1a1a3e;
+    color: #a78bfa;
+}
+[data-theme="cosmic"] .stats-day.done {
+    border-color: #00b894;
+}
+[data-theme="cosmic"] .stats-day.fail {
+    border-color: #ff6b6b;
+}
+
+/* ===== АДАПТИВ ===== */
+@media (max-width: 700px) {
+    .app-wrapper {
+        padding: 10px;
+    }
+    header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        text-align: center;
+    }
+    .header-controls {
+        justify-content: center;
+    }
+    .habit-card {
+        flex-wrap: wrap;
+    }
+    .habit-stats {
+        min-width: auto;
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+    .add-habit-form input,
+    .add-habit-form select {
+        flex: 1 1 100%;
+    }
+    .icon-picker {
+        justify-content: center;
+    }
+    .auth-box {
+        margin: 20px auto;
+        padding: 24px 16px;
+    }
+}
