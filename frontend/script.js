@@ -4,7 +4,9 @@ let currentFilter = 'all';
 let allHabits = [];
 let selectedIcon = '📚';
 
-// ===== ТЕМЫ =====
+
+
+// ===== THEMES =====
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     document.querySelectorAll('.theme-btn').forEach(btn => {
@@ -13,11 +15,11 @@ function setTheme(theme) {
     localStorage.setItem('theme', theme);
 }
 
-// Загружаем сохранённую тему
+// LOAD SAVED THEME
 const savedTheme = localStorage.getItem('theme') || 'dark';
 setTheme(savedTheme);
 
-// ===== ИКОНКИ =====
+// ===== ICONS =====
 function selectIcon(btn) {
     document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
@@ -249,7 +251,7 @@ async function loadStats(habit_id) {
     }
 }
 
-// Инициализация
+// initialization
 document.addEventListener('DOMContentLoaded', () => {
     const firstIcon = document.querySelector('.icon-btn');
     if (firstIcon) selectIcon(firstIcon);
