@@ -17,14 +17,7 @@ async_session = async_sessionmaker(
     expire_on_commit=False,
 )
 
-class Base(DeclarativeBase):
-    pass
 
-class Authorization(Base):
-    __tablename__='data'
 
-    id:Mapped[int]=mapped_column(primary_key=True)
-    username: Mapped[str]
-    password: Mapped[str]
 
 
