@@ -1,23 +1,25 @@
-from sqlalchemy import Column, String, ForeignKey,Boolean, Integer
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import DeclarativeBase,Mapped, mapped_column,as_declarative
-
-from backend.core.config import settings
+    
+from sqlalchemy.orm import DeclarativeBase,Mapped, mapped_column
+from backend.core.database import Base
 
 
-@as_declarative()
-class Abstractive():
-    id:Mapped[int]=mapped_column(primary_key=True, autoincrement=True)
 
 
-class UserSchema(Abstractive):
+
+
+
+
+
+class UserSchema(Base):
     __tablename__="users"
+    id:Mapped[int]=mapped_column(primary_key=True, autoincrement=True)
 
     username: Mapped[str] = mapped_column()
     password: Mapped[str] = mapped_column()
 
-class HabitSchema(Abstractive):
+class HabitSchema(Base):
     __tablename__="habits"
+    id:Mapped[int]=mapped_column(primary_key=True, autoincrement=True)
 
     habit: Mapped[str]= mapped_column()
     done: Mapped[bool] = mapped_column()

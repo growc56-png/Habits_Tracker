@@ -1,8 +1,9 @@
-from fastapi import FastAPI,HTTPException,Depends,dependencies
+from fastapi import APIRouter,Depends, FastAPI
+from backend.routers.routers import router
+from backend.models.models import UserSchema
 
-from pydantic import BaseModel
-
-from authx import AuthX, AuthXConfig, AuthXDependency
+app=FastAPI()
 
 
-    
+app.include_router(router)
+
