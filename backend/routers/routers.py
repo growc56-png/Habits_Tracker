@@ -23,8 +23,8 @@ app=FastAPI()
 router=APIRouter()
 
 config=AuthXConfig()
-config.JWT_ACCESS_COOKIE_NAME="Name"
-config.JWT_SECRET_KEY="SECRET_KEY"
+config.JWT_ACCESS_COOKIE_NAME="mega_ultra+sTUPID_KEY3000_which_of_lengt_over_30_pls_give_me_money"
+config.JWT_SECRET_KEY="I_LOVE_WORK_AND_I_ALSO_MEGA_GENIUS_GIVE_ME_MONEUY_PLS_I_NEED_2MLM|N"
 config.JWT_TOKEN_LOCATION=['cookies']
 security=AuthX(config=config)
 
