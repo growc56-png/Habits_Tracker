@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException,Depends,dependencies,FastAPI,Response
-from pydantic import BaseModel
 
-from authx import AuthXConfig,AuthX, AuthXDependency
+from authx import AuthXConfig,AuthX
 
 from backend.core.database import engine
 
@@ -10,9 +9,9 @@ from backend.core.database import engine
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import async_session
-from backend.queries.queries import reg, loginUser
+from backend.queries.queries import reg, loginUser,AddHabit
 
-from backend.schemas.schemas import UserAuthSchema
+from backend.schemas.schemas import UserAuthSchema,HabitSchema
 
 from backend.models.models import Base
 
@@ -40,13 +39,6 @@ async def setup_db():
 
 
 
-
-@app.get("/habits")
-async def get_habits():
-    async with engine.connect() as conn:
-        ...
-
-
 async def get_session():
     async with async_session() as session:
         yield session 
@@ -68,3 +60,10 @@ async def login(data: UserAuthSchema, response: Response, session: AsyncSession=
     else:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
     return {"ok":True}
+
+
+@router.post("/habits/create")
+async def create_habit(habit: HabitSchema, session:AsyncSession=Depends(get_session)):
+    habit=await AddHabit(session, habit.name,habit.category,habit.description,habit.icon, habit.done) # type: ignore
+    return {"ok":True}
+

@@ -6,6 +6,9 @@ class UserAuthSchema(BaseModel):
     password: str
 
 class HabitSchema(BaseModel):
-    habit: str
+    name: str
+    description:str  | None=None
+    category:str ="Другое"
+    icon: str = "✅"
     done: bool
 

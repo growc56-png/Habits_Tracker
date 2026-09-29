@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends, FastAPI
 from backend.routers.routers import router
-from backend.models.models import UserSchema
+from backend.models.models import UserSchemaModel, HabitSchemaModel
 from fastapi.middleware.cors import CORSMiddleware
 
 

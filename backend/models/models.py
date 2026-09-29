@@ -1,5 +1,5 @@
     
-from sqlalchemy.orm import DeclarativeBase,Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 from backend.core.database import Base
 
 
@@ -10,17 +10,22 @@ from backend.core.database import Base
 
 
 
-class UserSchema(Base):
+class UserSchemaModel(Base):
     __tablename__="users"
     id:Mapped[int]=mapped_column(primary_key=True, autoincrement=True)
 
     username: Mapped[str] = mapped_column()
     password: Mapped[str] = mapped_column()
 
-class HabitSchema(Base):
+
+class HabitSchemaModel(Base):
     __tablename__="habits"
     id:Mapped[int]=mapped_column(primary_key=True, autoincrement=True)
 
-    habit: Mapped[str]= mapped_column()
-    done: Mapped[bool] = mapped_column()
-   
+    habitname: Mapped[str]= mapped_column()
+    description: Mapped[str]= mapped_column()
+    category: Mapped[str]= mapped_column()
+    icon: Mapped[str]= mapped_column()
+    done: Mapped[bool]=mapped_column()
+    
+

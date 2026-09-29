@@ -1,11 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.models.models import UserSchema, HabitSchema
+from backend.models.models import UserSchemaModel, HabitSchemaModel
 
 
 #registration
 async def reg(session: AsyncSession, user: str, passw: str):
-    User=UserSchema(username=user,password=passw)
+    User=UserSchemaModel(username=user,password=passw)
     
     session.add(User)
     await session.commit()
@@ -15,12 +15,17 @@ async def reg(session: AsyncSession, user: str, passw: str):
 #login
 async def loginUser(session: AsyncSession, user:str , passw: str):
     res=await session.execute(
-        select(UserSchema).where(
-            UserSchema.username==user,
-            UserSchema.password==passw
+        select(UserSchemaModel).where(
+            UserSchemaModel.username==user,
+            UserSchemaModel.password==passw
         )
     )
     return res.scalar_one_or_none()
-    
 
+async def AddHabit(session: AsyncSession, name:str,description:str,category:str,icon:str, done: bool=False):
+    habit=HabitSchemaModel(habitname=name, description=description,category=category,icon=icon, done=done)
+    session.add(habit)
+    await session.commit()
+    await session.refresh(habit)
+    return habit
 
