@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException,Depends,dependencies,FastAPI,Response
 
-from authx import AuthXConfig,AuthX
+from backend.core.Auth import config,security
 
 from backend.core.database import engine
 
@@ -9,7 +9,7 @@ from backend.core.database import engine
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import async_session
-from backend.queries.queries import reg, loginUser,AddHabit
+from backend.queries.queries import reg, loginUser
 
 from backend.schemas.schemas import UserAuthSchema,HabitSchema
 
@@ -21,11 +21,7 @@ from backend.models.models import Base
 app=FastAPI()
 router=APIRouter()
 
-config=AuthXConfig()
-config.JWT_ACCESS_COOKIE_NAME="mega_ultra+sTUPID_KEY3000_which_of_lengt_over_30_pls_give_me_money"
-config.JWT_SECRET_KEY="I_LOVE_WORK_AND_I_ALSO_MEGA_GENIUS_GIVE_ME_MONEUY_PLS_I_NEED_2MLM|N"
-config.JWT_TOKEN_LOCATION=['cookies']
-security=AuthX(config=config)
+
 
 
 
@@ -59,11 +55,5 @@ async def login(data: UserAuthSchema, response: Response, session: AsyncSession=
         response.set_cookie(config.JWT_ACCESS_COOKIE_NAME,token)
     else:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
-    return {"ok":True}
-
-
-@router.post("/habits/create")
-async def create_habit(habit: HabitSchema, session:AsyncSession=Depends(get_session)):
-    habit=await AddHabit(session, habit.name,habit.category,habit.description,habit.icon, habit.done) # type: ignore
     return {"ok":True}
 

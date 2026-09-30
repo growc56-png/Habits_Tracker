@@ -22,10 +22,4 @@ async def loginUser(session: AsyncSession, user:str , passw: str):
     )
     return res.scalar_one_or_none()
 
-async def AddHabit(session: AsyncSession, name:str,description:str,category:str,icon:str, done: bool=False):
-    habit=HabitSchemaModel(habitname=name, description=description,category=category,icon=icon, done=done)
-    session.add(habit)
-    await session.commit()
-    await session.refresh(habit)
-    return habit
 

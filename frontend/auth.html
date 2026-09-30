@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitFlow — Вход</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --text-light: #9ca3af;
+            --accent: #0d9488;
+            --accent-dark: #0f766e;
+            --accent-light: #ccfbf1;
+            --border: #e5e7eb;
+            --radius: 20px;
+            --radius-sm: 12px;
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: 
+                radial-gradient(circle at 12% 15%, #b8e6e0 0%, transparent 45%),
+                radial-gradient(circle at 88% 20%, #d4f0e8 0%, transparent 45%),
+                radial-gradient(circle at 20% 85%, #e0f2f0 0%, transparent 50%),
+                radial-gradient(circle at 85% 80%, #c8e8e8 0%, transparent 45%),
+                linear-gradient(135deg, #e8f4f2 0%, #eef8f5 50%, #e8f2f4 100%);
+            background-attachment: fixed;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 40px 32px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .auth-logo {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent-dark);
+            text-align: center;
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+        }
+
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: rgba(13, 148, 136, 0.08);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 11px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 9px;
+            transition: all 0.25s;
+            font-family: inherit;
+        }
+
+        .auth-tab.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-form.hidden { display: none; }
+
+        .auth-form input {
+            width: 100%;
+            background: white;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            font-size: 15px;
+            font-family: inherit;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .auth-form input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .auth-form input::placeholder {
+            color: var(--text-light);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            margin-top: 6px;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(13, 148, 136, 0.25);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            text-align: center;
+            display: none;
+            margin-bottom: 16px;
+        }
+
+        .auth-error.visible { display: block; }
+
+        @media (max-width: 480px) {
+            .auth-card { padding: 32px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <h1 class="auth-logo">HabitFlow</h1>
+        <p class="auth-subtitle" id="subtitle">Войди в свой аккаунт</p>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="tabLogin" type="button">Вход</button>
+            <button class="auth-tab" id="tabRegister" type="button">Регистрация</button>
+        </div>
+
+        <div class="auth-error" id="authError"></div>
+
+        <form id="loginForm" class="auth-form">
+            <input type="text" id="loginUsername" placeholder="Имя пользователя" required autocomplete="username">
+            <input type="password" id="loginPassword" placeholder="Пароль" required autocomplete="current-password">
+            <button type="submit" class="btn-primary">Войти</button>
+        </form>
+
+        <form id="registerForm" class="auth-form hidden">
+            <input type="text" id="regUsername" placeholder="Имя пользователя" required autocomplete="username">
+            <input type="password" id="regPassword" placeholder="Пароль" required autocomplete="new-password">
+            <input type="password" id="regConfirm" placeholder="Повторите пароль" required autocomplete="new-password">
+            <button type="submit" class="btn-primary">Зарегистрироваться</button>
+        </form>
+    </div>
+
+    <script>
+        const API = 'http://127.0.0.1:8000';
+
+        const tabLogin = document.getElementById('tabLogin');
+        const tabRegister = document.getElementById('tabRegister');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const subtitle = document.getElementById('subtitle');
+        const authError = document.getElementById('authError');
+
+        function showLogin() {
+            tabLogin.classList.add('active');
+            tabRegister.classList.remove('active');
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            subtitle.textContent = 'Войди в свой аккаунт';
+            authError.classList.remove('visible');
+        }
+
+        function showRegister() {
+            tabRegister.classList.add('active');
+            tabLogin.classList.remove('active');
+            registerForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            subtitle.textContent = 'Создай новый аккаунт';
+            authError.classList.remove('visible');
+        }
+
+        tabLogin.addEventListener('click', showLogin);
+        tabRegister.addEventListener('click', showRegister);
+
+        function showError(msg) {
+            authError.textContent = msg;
+            authError.classList.add('visible');
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) { showError('Заполни все поля'); return; }
+
+            const btn = loginForm.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Входим...';
+
+            try {
+                const res = await fetch(`${API}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (res.ok) {
+                    localStorage.setItem('username', username);
+                    window.location.href = 'index.html';
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    showError(data.detail || 'Неверное имя или пароль');
+                }
+            } catch (err) {
+                showError('Сервер не отвечает. Проверь, запущен ли бэкенд.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Войти';
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirm').value;
+
+            if (!username || !password || !confirm) { showError('Заполни все поля'); return; }
+            if (password !== confirm) { showError('Пароли не совпадают'); return; }
+            if (password.length < 4) { showError('Пароль минимум 4 символа'); return; }
+
+            const btn = registerForm.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = 'Создаём...';
+
+            try {
+                const res = await fetch(`${API}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (res.ok) {
+                    const loginRes = await fetch(`${API}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    if (loginRes.ok) {
+                        localStorage.setItem('username', username);
+                        window.location.href = 'index.html';
+                    } else {
+                        showError('Аккаунт создан. Войди вручную.');
+                        showLogin();
+                    }
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    showError(data.detail || 'Ошибка регистрации');
+                }
+            } catch (err) {
+                showError('Сервер не отвечает. Проверь, запущен ли бэкенд.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Зарегистрироваться';
+            }
+        });
+    </script>
+</body>
+</html>

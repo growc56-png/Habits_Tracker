@@ -1,258 +1,161 @@
-const API_URL = 'http://127.0.0.1:8000';
-let currentUserId = null;
-let currentFilter = 'all';
-let allHabits = [];
-let selectedIcon = '📚';
+const API = 'http://127.0.0.1:8000';
 
+// ===== Состояние =====
+let habits = [];
+let selectedIcon = '✅';
 
+// ===== Инициализация =====
+document.addEventListener('DOMContentLoaded', () => {
+    loadUser();
+    loadHabits();
+    setupTheme();
+    setupForm();
+    setupLogout();
+});
 
-// ===== THEMES =====
-function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.theme === theme);
+// ===== Пользователь =====
+function loadUser() {
+    const name = localStorage.getItem('username') || 'друг';
+    document.getElementById('userName').textContent = name;
+}
+
+// ===== Тема =====
+function setupTheme() {
+    const toggle = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    toggle.textContent = saved === 'dark' ? '🌙' : '☀️';
+
+    toggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        toggle.textContent = next === 'dark' ? '🌙' : '☀️';
     });
-    localStorage.setItem('theme', theme);
 }
 
-// LOAD SAVED THEME
-const savedTheme = localStorage.getItem('theme') || 'dark';
-setTheme(savedTheme);
-
-// ===== ICONS =====
-function selectIcon(btn) {
-    document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedIcon = btn.dataset.icon;
-    document.getElementById('selected-icon').value = selectedIcon;
-}
-
-// ===== АВТОРИЗАЦИЯ =====
-function switchToRegister() {
-    document.getElementById('login-box').style.display = 'none';
-    document.getElementById('register-box').style.display = 'block';
-}
-function switchToLogin() {
-    document.getElementById('register-box').style.display = 'none';
-    document.getElementById('login-box').style.display = 'block';
-}
-
-async function register() {
-    const username = document.getElementById('register-username').value.trim();
-    const password = document.getElementById('register-password').value.trim();
-    if (!username || !password) return alert('Заполните все поля!');
-    try {
-        const res = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            alert('Регистрация успешна! Войдите.');
-            switchToLogin();
-        } else {
-            alert('Ошибка: ' + (data.detail || 'неизвестная ошибка'));
-        }
-    } catch {
-        alert('Сервер не отвечает. Запустите бэкенд.');
-    }
-}
-
-async function login() {
-    const username = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value.trim();
-    if (!username || !password) return alert('Заполните все поля!');
-    try {
-        const res = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            currentUserId = data.user_id;
-            document.getElementById('username-display').textContent = `Привет, ${username}`;
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('habits-section').style.display = 'block';
-            document.getElementById('logout-btn').style.display = 'inline';
-            loadHabits();
-        } else {
-            alert('Неверное имя или пароль');
-        }
-    } catch {
-        alert('Сервер не отвечает.');
-    }
-}
-
-function logout() {
-    currentUserId = null;
-    document.getElementById('auth-section').style.display = 'block';
-    document.getElementById('habits-section').style.display = 'none';
-    document.getElementById('logout-btn').style.display = 'none';
-    document.getElementById('username-display').textContent = '';
-    document.getElementById('habits-list').innerHTML = '<p class="empty-msg">Войдите, чтобы увидеть привычки</p>';
-}
-
-// ===== ПРИВЫЧКИ =====
+// ===== Загрузка привычек =====
 async function loadHabits() {
-    if (!currentUserId) return;
     try {
-        const res = await fetch(`${API_URL}/habits/get`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: currentUserId })
-        });
-        allHabits = await res.json();
-        applyFilter();
-        if (allHabits.length > 0) loadStats(allHabits[0].id);
-    } catch {
-        alert('Ошибка загрузки привычек. Сервер запущен?');
+        const res = await fetch(`${API}/habits`, { credentials: 'include' });
+        if (res.ok) {
+            habits = await res.json();
+        }
+    } catch (e) {
+        habits = JSON.parse(localStorage.getItem('habits') || '[]');
     }
+    renderHabits();
+    updateStats();
 }
 
-function applyFilter() {
-    let filtered = allHabits;
-    if (currentFilter !== 'all') {
-        filtered = allHabits.filter(h => h.category === currentFilter);
-    }
-    renderHabits(filtered);
-}
+// ===== Отрисовка =====
+function renderHabits() {
+    const list = document.getElementById('habitsList');
+    const empty = document.getElementById('emptyState');
 
-function renderHabits(habits) {
-    const list = document.getElementById('habits-list');
-    if (!habits || habits.length === 0) {
-        list.innerHTML = '<p class="empty-msg">Нет привычек в этой категории.</p>';
+    if (habits.length === 0) {
+        list.innerHTML = '';
+        empty.classList.add('visible');
         return;
     }
-    let html = '';
-    habits.forEach(h => {
-        const checkedClass = h.is_done_today ? 'done' : '';
-        const progress = Math.round(h.progress || 0);
-        const streak = h.streak || 0;
-        html += `
-            <div class="habit-card" data-id="${h.id}">
-                <div class="habit-icon">${h.icon || '📌'}</div>
-                <div class="habit-info">
-                    <h3>
-                        ${h.name}
-                        <span class="category">${h.category || 'Без категории'}</span>
-                    </h3>
-                    <div class="description">${h.description || ''}</div>
-                </div>
-                <div class="habit-stats">
-                    <div class="streak">🔥 ${streak}</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progress}%;"></div>
-                    </div>
-                    <span style="font-size:12px;">${progress}%</span>
-                </div>
-                <div class="habit-actions">
-                    <div class="checkbox ${checkedClass}" onclick="toggleHabit(${h.id})">
-                        ${h.is_done_today ? '✓' : ''}
-                    </div>
-                    <button class="delete-btn" onclick="deleteHabit(${h.id})">✕</button>
-                </div>
+
+    empty.classList.remove('visible');
+    list.innerHTML = habits.map((h, i) => `
+        <div class="habit-card ${h.done ? 'done' : ''}">
+            <div class="habit-header">
+                <span class="habit-icon">${h.icon || '✅'}</span>
+                <span class="habit-category">${h.category || 'Другое'}</span>
             </div>
-        `;
+            <div class="habit-name">${h.name}</div>
+            ${h.description ? `<div class="habit-description">${h.description}</div>` : ''}
+            <div class="habit-actions">
+                <button class="btn-done ${h.done ? 'active' : ''}" onclick="toggleDone(${i})">
+                    ${h.done ? '✓ Выполнено' : 'Отметить'}
+                </button>
+                <button class="btn-delete" onclick="deleteHabit(${i})">✕</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ===== Статистика =====
+function updateStats() {
+    document.getElementById('totalHabits').textContent = habits.length;
+    document.getElementById('doneToday').textContent = habits.filter(h => h.done).length;
+    document.getElementById('streakMax').textContent = habits.reduce((max, h) => Math.max(max, h.streak || 0), 0);
+}
+
+// ===== Добавление =====
+function setupForm() {
+    // Выбор иконки
+    document.querySelectorAll('.icon-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedIcon = btn.dataset.icon;
+        });
     });
-    list.innerHTML = html;
-}
 
-function filterHabits(category) {
-    currentFilter = category;
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.category === category);
+    // Отправка формы
+    document.getElementById('habitForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('habitName').value.trim();
+        const description = document.getElementById('habitDescription').value.trim();
+        const category = document.getElementById('habitCategory').value;
+
+        if (!name) return;
+
+        const newHabit = { name, description, category, icon: selectedIcon, done: false, streak: 0 };
+        habits.push(newHabit);
+        saveHabits();
+        renderHabits();
+        updateStats();
+
+        // Отправка на бэкенд
+        try {
+            await fetch(`${API}/habits/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ name, description, category, icon: selectedIcon, done: false })
+            });
+        } catch (e) {
+            console.log('Офлайн-режим: привычка сохранена локально');
+        }
+
+        // Очистка формы
+        document.getElementById('habitName').value = '';
+        document.getElementById('habitDescription').value = '';
     });
-    applyFilter();
 }
 
-async function addHabit() {
-    const name = document.getElementById('new-habit-name').value.trim();
-    const description = document.getElementById('new-habit-desc').value.trim();
-    const category = document.getElementById('new-habit-category').value;
-    const icon = selectedIcon;
-    if (!name) return alert('Введите название!');
-    try {
-        const res = await fetch(`${API_URL}/habits/create`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: currentUserId, name, description, category, icon })
-        });
-        if (res.ok) {
-            document.getElementById('new-habit-name').value = '';
-            document.getElementById('new-habit-desc').value = '';
-            loadHabits();
-        } else {
-            alert('Ошибка создания');
-        }
-    } catch {
-        alert('Сервер не отвечает');
-    }
+// ===== Переключение выполнения =====
+function toggleDone(index) {
+    habits[index].done = !habits[index].done;
+    saveHabits();
+    renderHabits();
+    updateStats();
 }
 
-async function toggleHabit(habit_id) {
-    try {
-        const res = await fetch(`${API_URL}/habits/toggle`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ habit_id })
-        });
-        if (res.ok) {
-            loadHabits();
-        } else {
-            alert('Ошибка при отметке');
-        }
-    } catch {
-        alert('Сервер не отвечает');
-    }
+// ===== Удаление =====
+function deleteHabit(index) {
+    habits.splice(index, 1);
+    saveHabits();
+    renderHabits();
+    updateStats();
 }
 
-async function deleteHabit(habit_id) {
-    if (!confirm('Удалить привычку?')) return;
-    try {
-        const res = await fetch(`${API_URL}/habits/delete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ habit_id })
-        });
-        if (res.ok) {
-            loadHabits();
-        } else {
-            alert('Ошибка удаления');
-        }
-    } catch {
-        alert('Сервер не отвечает');
-    }
+// ===== Сохранение =====
+function saveHabits() {
+    localStorage.setItem('habits', JSON.stringify(habits));
 }
 
-async function loadStats(habit_id) {
-    try {
-        const res = await fetch(`${API_URL}/habits/stats`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ habit_id })
-        });
-        const data = await res.json();
-        const container = document.getElementById('stats-content');
-        if (!data.days) {
-            container.innerHTML = 'Нет данных';
-            return;
-        }
-        let html = `<p>Процент выполнения: <strong>${data.completion_rate}%</strong></p><div class="stats-grid">`;
-        data.days.forEach(day => {
-            const cls = day.done ? 'done' : 'fail';
-            html += `<div class="stats-day ${cls}">${day.date}<br>${day.done ? '✅' : '❌'}</div>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-    } catch {
-        container.innerHTML = 'Ошибка загрузки статистики';
-    }
+// ===== Выход =====
+function setupLogout() {
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('username');
+        localStorage.removeItem('habits');
+        window.location.href = 'login.html';
+    });
 }
-
-// initialization
-document.addEventListener('DOMContentLoaded', () => {
-    const firstIcon = document.querySelector('.icon-btn');
-    if (firstIcon) selectIcon(firstIcon);
-});
