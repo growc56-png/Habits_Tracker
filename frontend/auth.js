@@ -98,7 +98,7 @@ async function submitAuth(event) {
 function setTheme(theme) {
   document.body.dataset.theme = theme;
   localStorage.setItem("theme", theme);
-  $("#authThemeToggle .theme-symbol").textContent = theme === "dark" ? "☼" : "☾";
+  $("#authThemeToggle use").setAttribute("href", theme === "dark" ? "#i-sun" : "#i-moon");
 }
 
 function init() {
