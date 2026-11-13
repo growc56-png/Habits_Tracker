@@ -307,3 +307,6 @@ select.text-input { appearance: auto; }
   .habit-actions { gap: 3px; }
   .filter-tab { gap: 4px; padding: 7px 5px; font-size: 9px; }
 }
+
+.loading-row { display:flex; align-items:center; justify-content:center; gap:10px; min-height:125px; color:var(--muted); font-size:11px; }
+.loading-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 5px var(--green-soft); }
