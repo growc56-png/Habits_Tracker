@@ -1,6 +1,7 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
+<<<<<<< HEAD
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HabitFlow — Трекер привычек</title>
@@ -660,23 +661,64 @@
             .page-title h1 { font-size: 26px; }
         }
     </style>
+=======
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111713">
+  <title>Habits Tracker — привычки каждый день</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+>>>>>>> 7e60693ed0105d5a0ec165a09c92364261f42878
 </head>
-<body>
-    <div class="app">
-        <header class="header">
-            <div class="logo">HabitFlow</div>
-            <div class="user-info" onclick="openProfile()">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <span class="user-name" id="userName">Гость</span>
-            </div>
-        </header>
+<body data-theme="dark">
+  <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-mark" viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"></path><path d="M12 2.8a9.2 9.2 0 1 0 9.2 9.2"></path></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"></rect></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"></path><path d="M4 6h.01M4 12h.01M4 18h.01"></path></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"></path></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3.5 2"></path></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3Z"></path><path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z"></path></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5 8.6 8.6 0 1 0 20.5 14.3Z"></path></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3"></path></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="m14 5 5 5M4 20l4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11L4 20Z"></path></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3"></path><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"></path></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"></path></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22V5.5Z"></path><path d="M4 6v16m4-14h8m-8 4h8"></path></symbol>
+  </svg>
 
-        <div class="page-title">
-            <div class="breadcrumbs">Главная → Трекер привычек</div>
-            <h1>Привычка — это дело,<br>которое возвращается</h1>
-            <p>Отметил — и готово. <span class="quote">Без таблиц с галочками.</span></p>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="index.html" aria-label="Habits Tracker">
+        <span class="brand-mark"><svg class="icon"><use href="#i-mark"></use></svg></span>
+        <span>Habits<span class="brand-muted"> Tracker</span></span>
+      </a>
+
+      <div class="sidebar-caption">РАБОЧЕЕ ПРОСТРАНСТВО</div>
+      <nav class="side-nav" aria-label="Основная навигация">
+        <a class="nav-link active" href="#overview"><svg class="icon"><use href="#i-grid"></use></svg><span>Обзор</span></a>
+        <a class="nav-link" href="#habits"><svg class="icon"><use href="#i-list"></use></svg><span>Мои привычки</span><span class="nav-count" id="navHabitCount">0</span></a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-note">
+          <span class="note-icon"><svg class="icon"><use href="#i-spark"></use></svg></span>
+          <strong>Маленький шаг — уже победа</strong>
+          <p>Регулярность важнее идеального результата. Продолжай в своём темпе.</p>
         </div>
+        <button class="nav-link logout-button" id="logoutButton" type="button"><svg class="icon"><use href="#i-logout"></use></svg><span>Выйти из аккаунта</span></button>
+        <div class="sidebar-version">HABITS TRACKER <span>·</span> PERSONAL SPACE</div>
+      </div>
+    </aside>
 
+<<<<<<< HEAD
         <section class="stats">
             <div class="stat-card">
                 <div class="stat-icon">📋</div>
@@ -700,8 +742,137 @@
                 <span>+</span>
                 <span>Новая привычка</span>
             </button>
+=======
+    <main class="main-area" id="overview">
+      <header class="topbar">
+        <div class="topbar-path"><span>Моё пространство</span><svg class="icon"><use href="#i-arrow"></use></svg><strong>Обзор</strong></div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="themeToggle" type="button" aria-label="Переключить тему" title="Переключить тему"><svg class="icon"><use href="#i-sun"></use></svg></button>
+          <div class="user-chip">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div class="user-meta"><strong id="userName">Пользователь</strong><span>Личный аккаунт</span></div>
+          </div>
         </div>
+      </header>
 
+      <div class="page-wrap">
+        <section class="welcome-block">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-dot"></span><span id="todayLabel">ТВОЙ ДЕНЬ</span></div>
+            <h1>С возвращением, <span id="welcomeName">друг</span><span class="heading-period">.</span></h1>
+            <p>Хорошие привычки не появляются за один день. Они строятся шаг за шагом.</p>
+          </div>
+          <button class="button button-primary" id="openCreateButton" type="button"><svg class="icon"><use href="#i-plus"></use></svg>Новая привычка</button>
+        </section>
+
+        <section class="stats-grid" aria-label="Статистика привычек">
+          <article class="stat-card stat-total">
+            <div class="stat-card-top"><span class="stat-icon"><svg class="icon"><use href="#i-target"></use></svg></span><span class="stat-overline">ТВОЙ СПИСОК</span></div>
+            <div class="stat-value" id="totalHabits">0</div>
+            <div class="stat-label">Всего привычек</div>
+          </article>
+          <article class="stat-card stat-done">
+            <div class="stat-card-top"><span class="stat-icon"><svg class="icon"><use href="#i-check"></use></svg></span><span class="stat-overline">ОТЛИЧНАЯ РАБОТА</span></div>
+            <div class="stat-value" id="doneToday">0</div>
+            <div class="stat-label">Выполнено</div>
+          </article>
+          <article class="stat-card stat-pending">
+            <div class="stat-card-top"><span class="stat-icon"><svg class="icon"><use href="#i-clock"></use></svg></span><span class="stat-overline">ВПЕРЕДИ</span></div>
+            <div class="stat-value" id="remaining">0</div>
+            <div class="stat-label">Осталось выполнить</div>
+          </article>
+          <article class="stat-card stat-progress">
+            <div class="stat-card-top"><span class="stat-icon"><svg class="icon"><use href="#i-spark"></use></svg></span><span class="stat-overline">ТВОЙ РЕЗУЛЬТАТ</span></div>
+            <div class="stat-value" id="progressValue">0<span class="percent">%</span></div>
+            <div class="progress-track"><span id="progressBar"></span></div>
+          </article>
+        </section>
+
+        <section class="content-grid" id="habits">
+          <div class="habits-panel panel">
+            <div class="panel-heading">
+              <div><div class="section-kicker">ТВОЯ СИСТЕМА</div><h2>Мои привычки</h2><p>Отмечай прогресс и двигайся к своей цели.</p></div>
+              <span class="date-pill" id="currentDate">Сегодня</span>
+            </div>
+            <div class="habit-toolbar">
+              <div class="filter-tabs" role="group" aria-label="Фильтр привычек">
+                <button class="filter-tab active" type="button" data-filter="all">Все <span id="allCount">0</span></button>
+                <button class="filter-tab" type="button" data-filter="active">Активные <span id="activeCount">0</span></button>
+                <button class="filter-tab" type="button" data-filter="done">Готово <span id="doneCount">0</span></button>
+              </div>
+              <label class="search-box"><svg class="icon"><use href="#i-search"></use></svg><input id="habitSearch" type="search" placeholder="Найти привычку..." aria-label="Поиск привычек"></label>
+            </div>
+            <div class="api-message hidden" id="apiMessage" role="alert"></div>
+            <div class="habits-list" id="habitsList" aria-live="polite"></div>
+            <div class="empty-state hidden" id="emptyState">
+              <div class="empty-illustration"><svg class="icon"><use href="#i-book"></use></svg></div>
+              <h3 id="emptyTitle">Здесь пока пусто</h3>
+              <p id="emptyDescription">Добавь первую привычку — и начни создавать свою систему.</p>
+              <button class="button button-secondary" id="emptyCreateButton" type="button"><svg class="icon"><use href="#i-plus"></use></svg>Создать привычку</button>
+            </div>
+          </div>
+
+          <aside class="right-column">
+            <section class="focus-card">
+              <div class="focus-card-top"><span class="focus-icon"><svg class="icon"><use href="#i-spark"></use></svg></span><span>ФОКУС НА СЕГОДНЯ</span></div>
+              <h3>Не количество,<br>а постоянство.</h3>
+              <p>Даже пять минут в день могут стать началом большой перемены. Главное — возвращаться к тому, что для тебя важно.</p>
+              <div class="focus-divider"></div>
+              <div class="focus-footer"><span>ТВОЙ ТЕМП</span><strong>День за днём <svg class="icon"><use href="#i-arrow"></use></svg></strong></div>
+            </section>
+
+            <section class="category-panel panel">
+              <div class="side-panel-heading"><div><div class="section-kicker">СТРУКТУРА</div><h3>Категории</h3></div><span class="category-total" id="categoryTotal">0</span></div>
+              <div class="category-list" id="categoryList">
+                <div class="category-placeholder">Категории появятся после добавления привычек.</div>
+              </div>
+            </section>
+          </aside>
+        </section>
+
+        <footer class="page-footer"><span class="footer-mark"><svg class="icon"><use href="#i-mark"></use></svg></span> Создавай ритм, который работает на тебя.</footer>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="habitModal" role="presentation">
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="closeModalButton" type="button" aria-label="Закрыть"><svg class="icon"><use href="#i-close"></use></svg></button>
+      <div class="modal-kicker">ТВОЯ СИСТЕМА</div>
+      <h2 id="modalTitle">Новая привычка</h2>
+      <p class="modal-subtitle">Опиши привычку так, чтобы было понятно, к чему ты стремишься.</p>
+      <form id="habitForm">
+        <label class="field-label" for="habitName">Название привычки</label>
+        <input class="text-input" id="habitName" name="habitname" maxlength="100" placeholder="Например, читать каждый день" required>
+        <label class="field-label" for="habitDescription">Описание <span>необязательно</span></label>
+        <textarea class="text-input textarea-input" id="habitDescription" name="description" maxlength="300" rows="3" placeholder="Когда, как и зачем ты будешь это делать?"></textarea>
+        <label class="field-label" for="habitCategory">Категория</label>
+        <select class="text-input" id="habitCategory" name="category">
+          <option value="Здоровье">Здоровье</option>
+          <option value="Спорт">Спорт</option>
+          <option value="Обучение">Обучение</option>
+          <option value="Продуктивность">Продуктивность</option>
+          <option value="Саморазвитие">Саморазвитие</option>
+          <option value="Другое">Другое</option>
+        </select>
+        <label class="field-label">Значок</label>
+        <div class="icon-picker" id="iconPicker" role="group" aria-label="Выбрать значок">
+          <button class="icon-choice active" type="button" data-icon="🌱" aria-label="Рост">🌱</button>
+          <button class="icon-choice" type="button" data-icon="📚" aria-label="Обучение">📚</button>
+          <button class="icon-choice" type="button" data-icon="💧" aria-label="Вода">💧</button>
+          <button class="icon-choice" type="button" data-icon="🏃" aria-label="Спорт">🏃</button>
+          <button class="icon-choice" type="button" data-icon="🧘" aria-label="Баланс">🧘</button>
+          <button class="icon-choice" type="button" data-icon="✍️" aria-label="Письмо">✍️</button>
+          <button class="icon-choice" type="button" data-icon="🎯" aria-label="Цель">🎯</button>
+>>>>>>> 7e60693ed0105d5a0ec165a09c92364261f42878
+        </div>
+        <p class="form-error" id="habitFormError" role="alert"></p>
+        <div class="modal-actions"><button class="button button-secondary" id="cancelModalButton" type="button">Отмена</button><button class="button button-primary" id="saveHabitButton" type="submit">Сохранить привычку <svg class="icon"><use href="#i-arrow"></use></svg></button></div>
+      </form>
+    </section>
+  </div>
+
+<<<<<<< HEAD
         <div class="tabs">
             <button class="tab active" id="tabAll" onclick="switchTab('all')">
                 Все привычки
@@ -1327,5 +1498,8 @@
             window.location.href = 'auth.html';
         }
     </script>
+=======
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+>>>>>>> 7e60693ed0105d5a0ec165a09c92364261f42878
 </body>
 </html>
