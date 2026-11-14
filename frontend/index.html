@@ -159,17 +159,10 @@
 
         .actions-bar {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             margin-bottom: 20px;
             gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .actions-left {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
         }
 
         .btn-add {
@@ -192,27 +185,6 @@
         .btn-add:hover {
             background: var(--accent-dark);
             transform: translateY(-2px);
-        }
-
-        .btn-test {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: white;
-            color: var(--accent-dark);
-            border: 1.5px solid var(--border);
-            padding: 12px 18px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        .btn-test:hover {
-            border-color: var(--accent);
-            background: var(--accent-light);
         }
 
         .tabs {
@@ -301,6 +273,7 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 4px;
+            flex-wrap: wrap;
         }
 
         .habit-name {
@@ -313,6 +286,15 @@
             background: var(--accent-light);
             color: var(--accent-dark);
             font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .habit-streak {
+            background: #fef3c7;
+            color: #b45309;
+            font-size: 12px;
             font-weight: 600;
             padding: 3px 10px;
             border-radius: 20px;
@@ -396,14 +378,6 @@
             opacity: 0.4;
         }
 
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-muted);
-            font-size: 15px;
-        }
-
-        /* ПРОФИЛЬ */
         .profile-modal { text-align: center; }
 
         .profile-avatar {
@@ -593,6 +567,34 @@
             background: var(--accent-light);
         }
 
+        /* ДНИ НЕДЕЛИ */
+        .days-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .day-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: white;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .day-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+        }
+
+        .day-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
         .modal-actions {
             display: flex;
             gap: 10px;
@@ -684,22 +686,16 @@
             <div class="stat-card">
                 <div class="stat-icon">✅</div>
                 <div class="stat-value" id="doneToday">0</div>
-                <div class="stat-label">Выполнено</div>
+                <div class="stat-label">Выполнено сегодня</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-value" id="remaining">0</div>
-                <div class="stat-label">Осталось</div>
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value" id="bestStreak">0</div>
+                <div class="stat-label">Лучшая серия</div>
             </div>
         </section>
 
         <div class="actions-bar">
-            <div class="actions-left">
-                <button class="btn-test" onclick="testEndpoint('GET', '/habits')">📥 GET /habits</button>
-                <button class="btn-test" onclick="testEndpoint('GET', '/statistics')">📊 GET /statistics</button>
-                <button class="btn-test" onclick="testEndpoint('GET', '/me')">👤 GET /me</button>
-                <button class="btn-test" onclick="testEndpoint('GET', '/habits/streaks')">🔥 GET /streaks</button>
-            </div>
             <button class="btn-add" onclick="openModal()">
                 <span>+</span>
                 <span>Новая привычка</span>
@@ -718,7 +714,6 @@
         </div>
 
         <div class="habits-list" id="habitsList"></div>
-        <div class="loading" id="loading" style="display:none;">Загрузка привычек...</div>
         <div class="empty" id="emptyState" style="display:none;">
             <div class="empty-icon" id="emptyIcon">🌱</div>
             <p id="emptyText">Пока нет привычек. Добавь первую!</p>
@@ -765,6 +760,19 @@
                     <button type="button" class="icon-btn" data-icon="🏃">🏃</button>
                     <button type="button" class="icon-btn" data-icon="🎯">🎯</button>
                     <button type="button" class="icon-btn" data-icon="✍️">✍️</button>
+                </div>
+            </div>
+
+            <div class="modal-field">
+                <label>Дни повторения</label>
+                <div class="days-picker" id="daysPicker">
+                    <button type="button" class="day-btn active" data-day="1">Пн</button>
+                    <button type="button" class="day-btn active" data-day="2">Вт</button>
+                    <button type="button" class="day-btn active" data-day="3">Ср</button>
+                    <button type="button" class="day-btn active" data-day="4">Чт</button>
+                    <button type="button" class="day-btn active" data-day="5">Пт</button>
+                    <button type="button" class="day-btn active" data-day="6">Сб</button>
+                    <button type="button" class="day-btn active" data-day="0">Вс</button>
                 </div>
             </div>
 
@@ -818,6 +826,19 @@
                 </div>
             </div>
 
+            <div class="modal-field">
+                <label>Дни повторения</label>
+                <div class="days-picker" id="editDaysPicker">
+                    <button type="button" class="day-btn" data-day="1">Пн</button>
+                    <button type="button" class="day-btn" data-day="2">Вт</button>
+                    <button type="button" class="day-btn" data-day="3">Ср</button>
+                    <button type="button" class="day-btn" data-day="4">Чт</button>
+                    <button type="button" class="day-btn" data-day="5">Пт</button>
+                    <button type="button" class="day-btn" data-day="6">Сб</button>
+                    <button type="button" class="day-btn" data-day="0">Вс</button>
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeEditModal()">Отмена</button>
                 <button class="btn-save" onclick="saveEditHabit()">Сохранить</button>
@@ -844,8 +865,8 @@
                         <div class="profile-stat-label">Привычек</div>
                     </div>
                     <div class="profile-stat">
-                        <div class="profile-stat-value" id="profileDone">0</div>
-                        <div class="profile-stat-label">Выполнено</div>
+                        <div class="profile-stat-value" id="profileBestStreak">0</div>
+                        <div class="profile-stat-label">Лучшая серия</div>
                     </div>
                 </div>
 
@@ -857,28 +878,33 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        const API = 'http://127.0.0.1:8000';
         const username = localStorage.getItem('username');
 
-        // ===== ПРОВЕРКА АВТОРИЗАЦИИ =====
         if (!username) {
             window.location.href = 'auth.html';
         }
 
+        const STORAGE_KEY = `habits_${username}`;
+
+        const DAY_NAMES = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
         let habits = [];
         let selectedCategory = 'Здоровье';
         let selectedIcon = '✅';
+        let selectedDays = [1, 2, 3, 4, 5, 6, 0];
         let currentTab = 'all';
 
         let editingHabitId = null;
         let editSelectedCategory = 'Здоровье';
         let editSelectedIcon = '✅';
+        let editSelectedDays = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             loadUser();
             loadHabits();
             setupCategoryPicker();
             setupIconPicker();
+            setupDaysPicker();
             setupEditPickers();
 
             document.addEventListener('keydown', (e) => {
@@ -909,34 +935,13 @@
             document.getElementById('profileAvatar').textContent = username.charAt(0).toUpperCase();
         }
 
-        async function loadHabits() {
-            showLoading(true);
-
-            try {
-                const res = await fetch(`${API}/habits`, { credentials: 'include' });
-
-                if (res.ok) {
-                    habits = await res.json();
-                } else if (res.status === 401) {
-                    showToast('Сессия истекла. Войди снова.', '#ef4444');
-                    setTimeout(() => logout(), 1500);
-                    return;
-                } else {
-                    habits = [];
-                    showToast('Ошибка загрузки', '#ef4444');
-                }
-            } catch (err) {
-                habits = [];
-                showToast('Бэкенд не отвечает', '#ef4444');
-            } finally {
-                showLoading(false);
-                render();
-            }
+        function loadHabits() {
+            habits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            render();
         }
 
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
-            document.getElementById('habitsList').style.display = show ? 'none' : 'flex';
+        function saveHabits() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
         }
 
         function showToast(msg, color = '#1f2937') {
@@ -947,30 +952,6 @@
             setTimeout(() => toast.classList.remove('visible'), 3000);
         }
 
-        async function testEndpoint(method, path) {
-            showToast(`${method} ${path} → запрос...`, '#6b7280');
-
-            try {
-                const res = await fetch(`${API}${path}`, {
-                    method: method,
-                    credentials: 'include',
-                });
-
-                const data = await res.json().catch(() => ({}));
-
-                if (res.ok) {
-                    showToast(`✅ ${method} ${path} — ${res.status}`, '#0d9488');
-                    console.log(`✅ ${method} ${path}:`, data);
-                } else {
-                    showToast(`⚠️ ${method} ${path} — ${res.status}`, '#f59e0b');
-                    console.log(`⚠️ ${method} ${path}:`, data);
-                }
-            } catch (err) {
-                showToast(`❌ ${method} ${path} — нет связи`, '#ef4444');
-                console.error(err);
-            }
-        }
-
         function switchTab(tab) {
             currentTab = tab;
             document.getElementById('tabAll').classList.toggle('active', tab === 'all');
@@ -978,6 +959,92 @@
             renderHabits();
         }
 
+        // ===== ДНИ НЕДЕЛИ =====
+        function setupDaysPicker() {
+            document.querySelectorAll('#daysPicker .day-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const day = parseInt(btn.dataset.day);
+                    if (selectedDays.includes(day)) {
+                        selectedDays = selectedDays.filter(d => d !== day);
+                        btn.classList.remove('active');
+                    } else {
+                        selectedDays.push(day);
+                        btn.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        function setupEditDaysPicker() {
+            document.querySelectorAll('#editDaysPicker .day-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const day = parseInt(btn.dataset.day);
+                    if (editSelectedDays.includes(day)) {
+                        editSelectedDays = editSelectedDays.filter(d => d !== day);
+                        btn.classList.remove('active');
+                    } else {
+                        editSelectedDays.push(day);
+                        btn.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        // ===== WINSTREAK =====
+        function getStreak(habit) {
+            const history = habit.history || {};
+            const today = new Date();
+            let streak = 0;
+            let current = new Date(today);
+
+            const todayStr = toDateStr(today);
+            if (!history[todayStr]) {
+                current.setDate(current.getDate() - 1);
+            }
+
+            while (true) {
+                const dateStr = toDateStr(current);
+                if (history[dateStr]) {
+                    streak++;
+                    current.setDate(current.getDate() - 1);
+                } else break;
+                if (streak > 3650) break;
+            }
+            return streak;
+        }
+
+        function getBestStreak(habit) {
+            const history = habit.history || {};
+            const dates = Object.keys(history).sort();
+            if (dates.length === 0) return 0;
+
+            let best = 1, current = 1;
+            for (let i = 1; i < dates.length; i++) {
+                const prev = new Date(dates[i - 1]);
+                const curr = new Date(dates[i]);
+                const diff = (curr - prev) / (1000 * 60 * 60 * 24);
+                if (diff === 1) {
+                    current++;
+                    best = Math.max(best, current);
+                } else current = 1;
+            }
+            return best;
+        }
+
+        function toDateStr(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function isTodayScheduled(habit) {
+            if (!habit.days) return true;
+            const today = new Date().getDay();
+            return habit.days.includes(today);
+        }
+
+        // ===== МОДАЛКИ =====
         function openModal() {
             document.getElementById('modalOverlay').classList.add('visible');
             setTimeout(() => document.getElementById('habitName').focus(), 100);
@@ -988,12 +1055,14 @@
             document.getElementById('habitName').value = '';
             document.getElementById('habitDesc').value = '';
             selectedCategory = 'Здоровье';
+            selectedIcon = '✅';
+            selectedDays = [1, 2, 3, 4, 5, 6, 0];
             document.querySelectorAll('#categoryPicker .cat-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.cat === 'Здоровье');
             });
-            selectedIcon = '✅';
             document.querySelectorAll('#iconPicker .icon-btn').forEach(b => b.classList.remove('active'));
             document.querySelector('#iconPicker .icon-btn').classList.add('active');
+            document.querySelectorAll('#daysPicker .day-btn').forEach(b => b.classList.add('active'));
         }
 
         function openEditModal(habitId) {
@@ -1003,8 +1072,9 @@
             editingHabitId = habitId;
             editSelectedCategory = habit.category || 'Другое';
             editSelectedIcon = habit.icon || '✅';
+            editSelectedDays = [...(habit.days || [1, 2, 3, 4, 5, 6, 0])];
 
-            document.getElementById('editName').value = habit.habitname || habit.name || '';
+            document.getElementById('editName').value = habit.habitname || '';
             document.getElementById('editDesc').value = habit.description || '';
 
             document.querySelectorAll('#editCategoryPicker .cat-btn').forEach(b => {
@@ -1013,6 +1083,12 @@
 
             document.querySelectorAll('#editIconPicker .icon-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.icon === editSelectedIcon);
+            });
+
+            setupEditDaysPicker();  // пересоздаём слушатели
+            document.querySelectorAll('#editDaysPicker .day-btn').forEach(b => {
+                const day = parseInt(b.dataset.day);
+                b.classList.toggle('active', editSelectedDays.includes(day));
             });
 
             document.getElementById('editOverlay').classList.add('visible');
@@ -1034,7 +1110,8 @@
 
         function updateProfileStats() {
             document.getElementById('profileTotalHabits').textContent = habits.length;
-            document.getElementById('profileDone').textContent = habits.filter(h => h.done).length;
+            const best = habits.reduce((max, h) => Math.max(max, getBestStreak(h)), 0);
+            document.getElementById('profileBestStreak').textContent = best;
         }
 
         function setupCategoryPicker() {
@@ -1075,108 +1152,85 @@
             });
         }
 
-        async function addHabit() {
+        // ===== СОЗДАНИЕ =====
+        function addHabit() {
             const name = document.getElementById('habitName').value.trim();
             const desc = document.getElementById('habitDesc').value.trim();
 
             if (!name) { showToast('Введи название', '#ef4444'); return; }
+            if (selectedDays.length === 0) { showToast('Выбери хотя бы один день', '#ef4444'); return; }
 
-            try {
-                const res = await fetch(`${API}/habits/create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        habitname: name,
-                        description: desc,
-                        category: selectedCategory,
-                        icon: selectedIcon,
-                        done: false,
-                    })
-                });
+            const newHabit = {
+                id: Date.now(),
+                habitname: name,
+                description: desc,
+                category: selectedCategory,
+                icon: selectedIcon,
+                days: [...selectedDays].sort(),
+                done: false,
+                history: {},
+            };
 
-                if (res.ok) {
-                    closeModal();
-                    showToast('✅ Привычка создана', '#0d9488');
-                    loadHabits();
-                } else {
-                    const data = await res.json().catch(() => ({}));
-                    showToast(`❌ ${data.detail || 'Ошибка'}`, '#ef4444');
-                }
-            } catch (err) {
-                showToast('❌ Бэкенд не отвечает', '#ef4444');
-            }
+            habits.push(newHabit);
+            saveHabits();
+            closeModal();
+            render();
+            showToast('✅ Привычка создана', '#0d9488');
         }
 
-        async function saveEditHabit() {
+        // ===== РЕДАКТИРОВАНИЕ =====
+        function saveEditHabit() {
             if (!editingHabitId) return;
 
             const name = document.getElementById('editName').value.trim();
             const desc = document.getElementById('editDesc').value.trim();
 
             if (!name) { showToast('Введи название', '#ef4444'); return; }
+            if (editSelectedDays.length === 0) { showToast('Выбери хотя бы один день', '#ef4444'); return; }
 
-            try {
-                const res = await fetch(`${API}/habits/${editingHabitId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        habitname: name,
-                        description: desc,
-                        category: editSelectedCategory,
-                        icon: editSelectedIcon,
-                    })
-                });
+            const habit = habits.find(h => h.id === editingHabitId);
+            if (!habit) return;
 
-                if (res.ok) {
-                    closeEditModal();
-                    showToast('✅ Обновлено', '#0d9488');
-                    loadHabits();
-                } else {
-                    const data = await res.json().catch(() => ({}));
-                    showToast(`❌ ${data.detail || 'Ошибка'}`, '#ef4444');
-                }
-            } catch (err) {
-                showToast('❌ Бэкенд не отвечает', '#ef4444');
-            }
+            habit.habitname = name;
+            habit.description = desc;
+            habit.category = editSelectedCategory;
+            habit.icon = editSelectedIcon;
+            habit.days = [...editSelectedDays].sort();
+
+            saveHabits();
+            closeEditModal();
+            render();
+            showToast('✅ Обновлено', '#0d9488');
         }
 
-        async function deleteHabit(id) {
+        // ===== УДАЛЕНИЕ =====
+        function deleteHabit(id) {
             if (!confirm('Удалить привычку?')) return;
-
-            try {
-                const res = await fetch(`${API}/habits/${id}`, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                });
-
-                if (res.ok) {
-                    showToast('🗑️ Удалено', '#6b7280');
-                    loadHabits();
-                } else {
-                    showToast('❌ Ошибка удаления', '#ef4444');
-                }
-            } catch (err) {
-                showToast('❌ Бэкенд не отвечает', '#ef4444');
-            }
+            habits = habits.filter(h => h.id !== id);
+            saveHabits();
+            render();
+            showToast('🗑️ Удалено', '#6b7280');
         }
 
-        async function toggleDone(habitId) {
-            try {
-                const res = await fetch(`${API}/habits/${habitId}/toggle`, {
-                    method: 'POST',
-                    credentials: 'include',
-                });
+        // ===== ОТМЕТКА =====
+        function toggleDone(habitId) {
+            const habit = habits.find(h => h.id === habitId);
+            if (!habit) return;
 
-                if (res.ok) {
-                    loadHabits();
-                } else {
-                    showToast('❌ Ошибка отметки', '#ef4444');
-                }
-            } catch (err) {
-                showToast('❌ Бэкенд не отвечает', '#ef4444');
+            const todayStr = toDateStr(new Date());
+
+            if (!habit.history) habit.history = {};
+
+            if (habit.history[todayStr]) {
+                delete habit.history[todayStr];
+                habit.done = false;
+            } else {
+                habit.history[todayStr] = true;
+                habit.done = true;
             }
+
+            saveHabits();
+            render();
         }
 
         function render() {
@@ -1185,9 +1239,13 @@
         }
 
         function renderStats() {
+            const todayStr = toDateStr(new Date());
+
             document.getElementById('totalHabits').textContent = habits.length;
-            document.getElementById('doneToday').textContent = habits.filter(h => h.done).length;
-            document.getElementById('remaining').textContent = habits.filter(h => !h.done).length;
+            document.getElementById('doneToday').textContent = habits.filter(h => (h.history || {})[todayStr]).length;
+
+            const best = habits.reduce((max, h) => Math.max(max, getBestStreak(h)), 0);
+            document.getElementById('bestStreak').textContent = best;
         }
 
         function renderHabits() {
@@ -1195,16 +1253,17 @@
             const empty = document.getElementById('emptyState');
             const emptyIcon = document.getElementById('emptyIcon');
             const emptyText = document.getElementById('emptyText');
+            const todayStr = toDateStr(new Date());
 
             const totalCount = habits.length;
-            const doneCount = habits.filter(h => h.done).length;
+            const doneCount = habits.filter(h => (h.history || {})[todayStr]).length;
 
             document.getElementById('countAll').textContent = totalCount;
             document.getElementById('countDone').textContent = doneCount;
 
             let visibleHabits = habits;
             if (currentTab === 'done') {
-                visibleHabits = habits.filter(h => h.done);
+                visibleHabits = habits.filter(h => (h.history || {})[todayStr]);
             }
 
             if (visibleHabits.length === 0) {
@@ -1212,7 +1271,7 @@
                 empty.style.display = 'block';
                 if (currentTab === 'done') {
                     emptyIcon.textContent = '📭';
-                    emptyText.textContent = 'Пока ничего не выполнено.';
+                    emptyText.textContent = 'Пока ничего не выполнено сегодня.';
                 } else {
                     emptyIcon.textContent = '🌱';
                     emptyText.textContent = 'Пока нет привычек. Добавь первую!';
@@ -1223,19 +1282,28 @@
             empty.style.display = 'none';
 
             list.innerHTML = visibleHabits.map(h => {
-                const isDone = !!h.done;
-                const habitName = h.habitname || h.name || 'Без названия';
+                const history = h.history || {};
+                const isDone = !!history[todayStr];
+                const streak = getStreak(h);
+                const scheduledToday = isTodayScheduled(h);
+
+                const daysText = !h.days || h.days.length === 7 ? 'каждый день' :
+                    h.days.map(d => DAY_NAMES[d]).join(', ');
 
                 return `
                     <div class="habit-row ${isDone ? 'completed' : ''}" onclick="openEditModal(${h.id})">
                         <div class="habit-icon-big">${h.icon || '✅'}</div>
                         <div class="habit-info">
                             <div class="habit-name-row">
-                                <span class="habit-name">${escapeHtml(habitName)}</span>
+                                <span class="habit-name">${escapeHtml(h.habitname || 'Без названия')}</span>
                                 <span class="habit-category">${h.category || 'Другое'}</span>
+                                ${streak > 0 && !isDone ? `<span class="habit-streak">🔥 ${streak} дн.</span>` : ''}
                                 ${isDone ? `<span class="habit-done-badge">✓ Готово</span>` : ''}
                             </div>
-                            ${h.description ? `<div class="habit-meta">${escapeHtml(h.description)}</div>` : ''}
+                            <div class="habit-meta">
+                                ${daysText}${h.description ? ' · ' + escapeHtml(h.description) : ''}
+                                ${!scheduledToday ? ' · ⚠️ сегодня не запланировано' : ''}
+                            </div>
                         </div>
                         <div class="habit-actions" onclick="event.stopPropagation()">
                             <button class="btn-check ${isDone ? 'done' : ''}" onclick="toggleDone(${h.id})">
