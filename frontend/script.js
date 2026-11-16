@@ -18,7 +18,7 @@ async function api(path, options={}) {
   return data;
 }
 function normalizeHabit(h){
-  return {id:h.id,habitname:h.name??h.habitname??h.habit??"Без названия",description:h.description||"",category:h.category||"Другое",icon:h.icon||"🌱",doneDate:h.completed_today?h.completed_date:(h.done_date||null),done:!!h.completed_today};
+  return {id:h.id,habitname:h.name??h.habitname??h.habit??"Без названия",description:h.description||"",category:h.category||"Другое",icon:h.icon||"🌱",doneDate:h.completed_today?todayKey():(h.completed_date||h.done_date||null),done:!!h.completed_today};
 }
 function normalizeEntry(e){return {id:e.id,name:e.task_name??e.name??"Без названия",work:Number(e.minutes??e.work_minutes??0),updatedAt:e.created_at?Date.parse(e.created_at):Date.now()};}
 function todayKey() { const d = new Date(); return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-"); }
@@ -112,10 +112,11 @@ async function saveHabit(event){
   event.preventDefault();const name=$("#habitName").value.trim();
   if(!name){$("#habitFormError").textContent="Введи название привычки.";return;}
   const data={name,description:$("#habitDescription").value.trim(),category:$("#habitCategory").value,icon:state.selectedIcon};
+  const isEditing=state.editingId!==null;
   try{
-    if(state.editingId!==null)await api("/habits/"+encodeURIComponent(state.editingId),{method:"PATCH",body:JSON.stringify(data)});
+    if(isEditing)await api("/habits/"+encodeURIComponent(state.editingId),{method:"PATCH",body:JSON.stringify(data)});
     else await api("/habits",{method:"POST",body:JSON.stringify(data)});
-    await loadData();closeHabitModal();showToast(state.editingId!==null?"Привычка обновлена.":"Привычка добавлена.");
+    await loadData();closeHabitModal();showToast(isEditing?"Привычка обновлена.":"Привычка добавлена.");
   }catch(error){$("#habitFormError").textContent=error.message;}
 }
 async function toggleHabit(id){
