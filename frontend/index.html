@@ -75,19 +75,18 @@
               <div class="preset-row" role="group" aria-label="Пресеты таймера"><button class="preset-button active" type="button" data-preset="50-10">50 / 10</button><button class="preset-button" type="button" data-preset="45-15">45 / 15</button><button class="preset-button" type="button" data-preset="custom">Своё время</button></div>
               <div class="custom-time-row hidden" id="customTimeRow"><label>Работа, мин<input class="text-input" id="pomoWorkMinutes" type="number" min="1" max="240" value="50"></label><label>Отдых, мин<input class="text-input" id="pomoRestMinutes" type="number" min="1" max="120" value="10"></label></div>
               <div class="timer-area"><div class="timer-ring" id="timerRing"><div class="timer-ring-inner"><span id="timerPhase">РАБОТА</span><strong id="timerDisplay">50:00</strong><small id="timerRound">Подход 1 из 4</small></div></div><div class="timer-side"><label class="field-label" for="pomoCycles">Количество подходов</label><input class="text-input cycle-input" id="pomoCycles" type="number" min="1" max="20" value="4"><div class="timer-status" id="timerStatus">Готов к началу</div><div class="timer-buttons"><button class="button button-primary" id="timerStart" type="button"><svg class="icon"><use href="#i-play"></use></svg>Старт</button><button class="button button-secondary" id="timerPause" type="button" disabled>Пауза</button><button class="icon-button" id="timerReset" type="button" aria-label="Сбросить таймер"><svg class="icon"><use href="#i-refresh"></use></svg></button></div></div></div>
-              <div class="timer-hint">После завершения каждого интервала время автоматически добавится к выбранной задаче.</div>
+              <div class="timer-hint">После работы прозвучит сигнал, и через 5 секунд автоматически начнётся отдых. В статистику попадают только рабочие минуты.</div>
             </section>
             <section class="panel time-panel">
-              <div class="tool-heading"><div><div class="section-kicker">МОЙ ПРОГРЕСС</div><h3>Учёт времени</h3><p>Записывай работу и отдых отдельно.</p></div><span class="tool-icon">◴</span></div>
+              <div class="tool-heading"><div><div class="section-kicker">МОЙ ПРОГРЕСС</div><h3>Учёт времени</h3><p>Учитываются только рабочие минуты.</p></div><span class="tool-icon">◴</span></div>
               <form id="timeEntryForm" class="time-entry-form">
                 <div class="time-task-field"><label class="field-label" for="timeTaskName">Задача / предмет</label><input class="text-input" id="timeTaskName" maxlength="60" placeholder="Например, Backend" required></div>
                 <div class="time-side-fields">
-                  <label class="time-value-card work-card"><span>↗ Работа</span><input id="workMinutes" type="number" min="0" max="1440" value="50" aria-label="Минуты работы"><small>минут</small></label>
-                  <label class="time-value-card rest-card"><span>☕ Отдых</span><input id="restMinutes" type="number" min="0" max="1440" value="10" aria-label="Минуты отдыха"><small>минут</small></label>
+                  <label class="time-value-card work-card"><span>↗ Рабочее время</span><input id="workMinutes" type="number" min="1" max="1440" value="50" aria-label="Минуты работы" required><small>минут</small></label>
                 </div>
                 <button class="button button-primary time-save-button" type="submit"><svg class="icon"><use href="#i-plus"></use></svg>Добавить время</button>
               </form>
-              <div class="time-summary"><div class="time-summary-main"><span>Всего времени</span><strong id="trackedTotal">0 минут</strong></div><div class="time-summary-split"><div><span>Работа</span><strong id="trackedWork">0 мин</strong></div><div><span>Отдых</span><strong id="trackedRest">0 мин</strong></div></div></div>
+              <div class="time-summary"><div class="time-summary-main"><span>Всего рабочего времени</span><strong id="trackedTotal">0 минут</strong></div></div>
               <div class="records-heading"><strong>Время по задачам</strong><span id="recordsCount">0 задач</span></div><div class="time-records" id="timeRecords"><div class="records-empty">Здесь появится время по твоим задачам.</div></div>
             </section>
           </div>
