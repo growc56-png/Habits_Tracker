@@ -1,12 +1,26 @@
-const USER_KEY = "username";
+const USER_KEY = "access_token";
+const API_BASE = "http://127.0.0.1:8000";
 const THEME_KEY = "theme";
 const $ = (selector) => document.querySelector(selector);
 const state = {
-  username: "", habits: [], filter: "all", search: "", selectedIcon: "🌱", editingId: null, timeEntries: [],
+  username: "", token: "", habits: [], filter: "all", search: "", selectedIcon: "🌱", editingId: null, timeEntries: [],
   timer: { work: 50, rest: 10, cycles: 4, completed: 0, phase: "work", remaining: 3000, endAt: null, running: false, interval: null, audioContext: null },
   toastTimer: null
 };
-function storageKey(kind) { return kind + "_" + encodeURIComponent(state.username.toLowerCase()); }
+async function api(path, options={}) {
+  const headers={"Content-Type":"application/json",...(options.headers||{})};
+  if(state.token)headers.Authorization="Bearer "+state.token;
+  const response=await fetch(API_BASE+path,{...options,headers});
+  const raw=await response.text();let data=null;
+  try{data=raw?JSON.parse(raw):null;}catch(_){data={detail:raw};}
+  if(response.status===401){localStorage.removeItem(USER_KEY);location.replace("auth.html");throw new Error("Сессия закончилась. Войди снова.");}
+  if(!response.ok)throw new Error(data?.detail||data?.message||("Ошибка API: "+response.status));
+  return data;
+}
+function normalizeHabit(h){
+  return {id:h.id,habitname:h.name??h.habitname??h.habit??"Без названия",description:h.description||"",category:h.category||"Другое",icon:h.icon||"🌱",doneDate:h.completed_today?h.completed_date:(h.done_date||null),done:!!h.completed_today};
+}
+function normalizeEntry(e){return {id:e.id,name:e.task_name??e.name??"Без названия",work:Number(e.minutes??e.work_minutes??0),updatedAt:e.created_at?Date.parse(e.created_at):Date.now()};}
 function todayKey() { const d = new Date(); return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-"); }
 function escapeHtml(v) { return String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c]); }
 function showToast(message, error) {
@@ -17,11 +31,16 @@ function setTheme(theme) {
   document.body.dataset.theme = theme; localStorage.setItem(THEME_KEY, theme);
   $("#themeToggle use").setAttribute("href", theme === "dark" ? "#i-sun" : "#i-moon");
 }
-function initUser() {
-  const username = localStorage.getItem(USER_KEY);
-  if (!username) { location.replace("auth.html"); return false; }
-  state.username = username; $("#userName").textContent = username; $("#welcomeName").textContent = username;
-  $("#userAvatar").textContent = username.slice(0,1).toUpperCase(); return true;
+async function initUser() {
+  const token=localStorage.getItem(USER_KEY);
+  if(!token){location.replace("auth.html");return false;}
+  state.token=token;
+  try{
+    const user=await api("/me");
+    state.username=user.username||user.user?.username||"Пользователь";
+    $("#userName").textContent=state.username;$("#welcomeName").textContent=state.username;
+    $("#userAvatar").textContent=state.username.slice(0,1).toUpperCase();return true;
+  }catch(error){showToast(error.message,true);return false;}
 }
 function fmtMinutes(value) {
   const n = Math.max(0, Math.round(Number(value)||0)), h = Math.floor(n/60), m = n%60;
@@ -35,13 +54,13 @@ function initDates() {
   $("#todayLabel").textContent=new Intl.DateTimeFormat("ru-RU",{weekday:"long",day:"numeric",month:"long"}).format(d).toUpperCase();
   $("#currentDate").textContent=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",year:"numeric"}).format(d);
 }
-function saveHabits(){localStorage.setItem(storageKey("habits"),JSON.stringify(state.habits));}
-function saveTimes(){localStorage.setItem(storageKey("time"),JSON.stringify(state.timeEntries));}
-function loadData(){
-  try{state.habits=JSON.parse(localStorage.getItem(storageKey("habits"))||"[]");if(!Array.isArray(state.habits))state.habits=[];}catch(_){state.habits=[];}
-  try{state.timeEntries=JSON.parse(localStorage.getItem(storageKey("time"))||"[]");if(!Array.isArray(state.timeEntries))state.timeEntries=[];}catch(_){state.timeEntries=[];}
-  state.habits=state.habits.map(h=>Object.assign({id:Date.now()+Math.random(),habitname:"Без названия",description:"",category:"Другое",icon:"🌱",doneDate:null},h));
-  renderHabits();renderTime();
+async function loadData(){
+  try{
+    const [habitsData,entriesData]=await Promise.all([api("/habits"),api("/time-entries")]);
+    state.habits=(Array.isArray(habitsData)?habitsData:(habitsData.items||[])).map(normalizeHabit);
+    state.timeEntries=(Array.isArray(entriesData)?entriesData:(entriesData.items||[])).map(normalizeEntry);
+    renderHabits();renderTime();
+  }catch(error){showToast("Не удалось загрузить данные: "+error.message,true);}
 }
 function isDone(h){return h.doneDate===todayKey();}
 function visibleHabits(){
@@ -89,33 +108,39 @@ function openHabitModal(h){
   setTimeout(()=>$("#habitName").focus(),30);
 }
 function closeHabitModal(){ $("#habitModal").classList.add("hidden");document.body.classList.remove("modal-open");state.editingId=null; }
-function saveHabit(event){
+async function saveHabit(event){
   event.preventDefault();const name=$("#habitName").value.trim();
   if(!name){$("#habitFormError").textContent="Введи название привычки.";return;}
-  const data={habitname:name,description:$("#habitDescription").value.trim(),category:$("#habitCategory").value,icon:state.selectedIcon};
-  if(state.editingId!==null){const h=state.habits.find(x=>String(x.id)===String(state.editingId));if(h)Object.assign(h,data);showToast("Привычка обновлена.");}
-  else{state.habits.unshift(Object.assign({id:Date.now(),doneDate:null},data));showToast("Привычка добавлена.");}
-  saveHabits();closeHabitModal();renderHabits();
+  const data={name,description:$("#habitDescription").value.trim(),category:$("#habitCategory").value,icon:state.selectedIcon};
+  try{
+    if(state.editingId!==null)await api("/habits/"+encodeURIComponent(state.editingId),{method:"PATCH",body:JSON.stringify(data)});
+    else await api("/habits",{method:"POST",body:JSON.stringify(data)});
+    await loadData();closeHabitModal();showToast(state.editingId!==null?"Привычка обновлена.":"Привычка добавлена.");
+  }catch(error){$("#habitFormError").textContent=error.message;}
 }
-function toggleHabit(id){const h=state.habits.find(x=>String(x.id)===String(id));if(!h)return;h.doneDate=isDone(h)?null:todayKey();saveHabits();renderHabits();}
-function deleteHabit(id){const h=state.habits.find(x=>String(x.id)===String(id));if(!h||!confirm('Удалить привычку «'+h.habitname+'»?'))return;state.habits=state.habits.filter(x=>String(x.id)!==String(id));saveHabits();renderHabits();showToast("Привычка удалена.");}
-
-function addTime(name,work,silent){
-  name=String(name||"").trim()||"Без названия";work=Math.max(0,Math.round(Number(work)||0));
-  if(work<=0)return false;
-  const old=state.timeEntries.find(e=>e.name.toLocaleLowerCase("ru")===name.toLocaleLowerCase("ru"));
-  if(old){old.work=(Number(old.work)||0)+work;old.rest=0;old.updatedAt=Date.now();}
-  else state.timeEntries.unshift({id:Date.now()+Math.random(),name,work,rest:0,updatedAt:Date.now()});
-  saveTimes();renderTime();if(!silent)showToast("Рабочее время добавлено к задаче «"+name+"».");return true;
+async function toggleHabit(id){
+  try{await api("/habits/"+encodeURIComponent(id)+"/toggle",{method:"POST"});await loadData();}
+  catch(error){showToast(error.message,true);}
+}
+async function deleteHabit(id){
+  const h=state.habits.find(x=>String(x.id)===String(id));if(!h||!confirm('Удалить привычку «'+h.habitname+'»?'))return;
+  try{await api("/habits/"+encodeURIComponent(id),{method:"DELETE"});await loadData();showToast("Привычка удалена.");}
+  catch(error){showToast(error.message,true);}
+}
+async function addTime(name,work,silent){
+  name=String(name||"").trim()||"Без названия";work=Math.max(0,Math.round(Number(work)||0));if(work<=0)return false;
+  try{
+    await api("/time-entries",{method:"POST",body:JSON.stringify({task_name:name,minutes:work,source:"pomodoro"})});
+    const entriesData=await api("/time-entries");state.timeEntries=(Array.isArray(entriesData)?entriesData:(entriesData.items||[])).map(normalizeEntry);
+    renderTime();if(!silent)showToast("Рабочее время добавлено к задаче «"+name+"».");return true;
+  }catch(error){showToast("Не удалось сохранить время: "+error.message,true);return false;}
 }
 function renderTime(){
-  const work=state.timeEntries.reduce((n,e)=>n+(Number(e.work)||0),0);
-  $("#trackedTotal").textContent=fmtMinutes(work);
-  $("#recordsCount").textContent=state.timeEntries.length+(state.timeEntries.length===1?" задача":" задач");
-  if(!state.timeEntries.length){$("#timeRecords").innerHTML='<div class="records-empty">Здесь появится время по твоим задачам.</div>';return;}
-  $("#timeRecords").innerHTML=state.timeEntries.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).map(e=>{
-    return '<article class="time-record"><div class="record-main"><strong>'+escapeHtml(e.name)+'</strong><span>'+fmtMinutes(e.work)+'</span></div><div class="record-breakdown"><span>Работа: '+shortMinutes(e.work)+'</span><button type="button" data-delete-time="'+escapeHtml(e.id)+'">Удалить</button></div></article>';
-  }).join("");
+  const grouped={};state.timeEntries.forEach(e=>{const key=e.name.toLocaleLowerCase("ru");if(!grouped[key])grouped[key]={name:e.name,work:0};grouped[key].work+=e.work;});
+  const rows=Object.values(grouped),work=rows.reduce((n,e)=>n+e.work,0);
+  $("#trackedTotal").textContent=fmtMinutes(work);$("#recordsCount").textContent=rows.length+(rows.length===1?" задача":" задач");
+  if(!rows.length){$("#timeRecords").innerHTML='<div class="records-empty">Здесь появится время по твоим задачам.</div>';return;}
+  $("#timeRecords").innerHTML=rows.sort((a,b)=>b.work-a.work).map(e=>'<article class="time-record"><div class="record-main"><strong>'+escapeHtml(e.name)+'</strong><span>'+fmtMinutes(e.work)+'</span></div><div class="record-breakdown"><span>Работа: '+shortMinutes(e.work)+'</span></div></article>').join("");
 }
 function persistTimer(){localStorage.setItem(storageKey("pomo"),JSON.stringify({work:state.timer.work,rest:state.timer.rest,cycles:state.timer.cycles}));}
 function updateTimer(){
@@ -243,15 +268,10 @@ function initEvents(){
     if(b.dataset.action==="toggle")toggleHabit(id);if(b.dataset.action==="delete")deleteHabit(id);
     if(b.dataset.action==="edit"){const h=state.habits.find(x=>String(x.id)===String(id));if(h)openHabitModal(h);}
   });
-  $("#timeEntryForm").addEventListener("submit",e=>{
+  $("#timeEntryForm").addEventListener("submit",async e=>{
     e.preventDefault();const name=$("#timeTaskName").value.trim(),work=Number($("#workMinutes").value);
-    if(!name){showToast("Введи название задачи.",true);return;}
-    if(!Number.isFinite(work)||work<1||work>1440){showToast("Укажи рабочее время от 1 до 1440 минут.",true);return;}
-    addTime(name,work,false);$("#timeEntryForm").reset();$("#workMinutes").value=0;
-  });
-  $("#timeRecords").addEventListener("click",e=>{
-    const b=e.target.closest("[data-delete-time]");if(!b)return;
-    state.timeEntries=state.timeEntries.filter(x=>String(x.id)!==b.dataset.deleteTime);saveTimes();renderTime();showToast("Запись времени удалена.");
+    if(!name||!Number.isFinite(work)||work<1||work>1440){showToast("Укажи задачу и рабочее время от 1 до 1440 минут.",true);return;}
+    if(await addTime(name,work,false)){ $("#timeEntryForm").reset();$("#workMinutes").value=0; }
   });
   document.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click",()=>setPreset(b.dataset.preset)));
   $("#pomoWorkMinutes").addEventListener("change",()=>{if(!$("#customTimeRow").classList.contains("hidden"))setPreset("custom");});
@@ -260,11 +280,9 @@ function initEvents(){
   $("#timerStart").addEventListener("click",startTimer);$("#timerPause").addEventListener("click",pauseTimer);$("#timerReset").addEventListener("click",()=>resetTimer(true));
   $("#logoutButton").addEventListener("click",()=>{pauseTimer();localStorage.removeItem(USER_KEY);location.href="auth.html";});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#habitModal").classList.contains("hidden"))closeHabitModal();});
-  document.querySelectorAll(".nav-link[href^='#']").forEach(link=>link.addEventListener("click",()=>{
-    document.querySelectorAll(".nav-link[href^='#']").forEach(item=>item.classList.remove("active"));link.classList.add("active");
-  }));
+  document.querySelectorAll(".nav-link[href^='#']").forEach(link=>link.addEventListener("click",()=>{document.querySelectorAll(".nav-link[href^='#']").forEach(item=>item.classList.remove("active"));link.classList.add("active");}));
 }
-function init(){
-  if(!initUser())return;setTheme(localStorage.getItem(THEME_KEY)||"dark");initDates();initEvents();loadData();loadTimerSettings();
+async function init(){
+  if(!await initUser())return;setTheme(localStorage.getItem(THEME_KEY)||"dark");initDates();initEvents();await loadData();loadTimerSettings();
 }
 document.addEventListener("DOMContentLoaded",init);
