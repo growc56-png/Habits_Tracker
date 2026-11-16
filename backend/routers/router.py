@@ -28,6 +28,13 @@ async def reg(user_reg:UserSchema, db:AsyncSession=Depends(get_db)):
     user=await registration(user_reg.username,user_reg.password,db)
     return user
 
+@router.post('/login')
+async def log(user_reg:UserSchema,db:AsyncSession=Depends(get_db)):
+    user=await login(user_reg.username, user_reg.password,db=db)
+    return user
+
+
+
     
                
 
