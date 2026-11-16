@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 
+
 router=APIRouter()
 
 
@@ -39,4 +40,3 @@ async def log(user_reg:UserSchema,db:AsyncSession=Depends(get_db)):
                
 
     
-

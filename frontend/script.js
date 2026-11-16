@@ -1,352 +1,233 @@
-const API_BASE = "http://127.0.0.1:8000";
 const USER_KEY = "username";
 const THEME_KEY = "theme";
-
+const $ = (selector) => document.querySelector(selector);
 const state = {
-  habits: [],
-  filter: "all",
-  search: "",
-  selectedIcon: "🌱",
-  editingId: null,
+  username: "", habits: [], filter: "all", search: "", selectedIcon: "🌱", editingId: null, timeEntries: [],
+  timer: { work: 50, rest: 10, cycles: 4, completed: 0, phase: "work", remaining: 3000, endAt: null, running: false, interval: null },
   toastTimer: null
 };
-
-const $ = (selector) => document.querySelector(selector);
-
-function escapeHtml(value) {
-  return String(value == null ? "" : value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  })[char]);
+function storageKey(kind) { return kind + "_" + encodeURIComponent(state.username.toLowerCase()); }
+function todayKey() { const d = new Date(); return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-"); }
+function escapeHtml(v) { return String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c]); }
+function showToast(message, error) {
+  const el = $("#toast"); el.textContent = message; el.classList.toggle("error", !!error); el.classList.add("show");
+  clearTimeout(state.toastTimer); state.toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
 }
-
-async function apiRequest(path, options) {
-  const config = options || {};
-  const headers = Object.assign({}, config.headers || {});
-  if (config.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
-
-  const response = await fetch(API_BASE + path, Object.assign({}, config, {
-    headers,
-    credentials: "include"
-  }));
-
-  const raw = await response.text();
-  let data = null;
-  try { data = raw ? JSON.parse(raw) : null; } catch (_) { data = { detail: raw }; }
-
-  if (!response.ok) {
-    const message = data && (data.detail || data.message || data.error);
-    const error = new Error(message || "Ошибка сервера (" + response.status + ")");
-    error.status = response.status;
-    throw error;
-  }
-  return data;
-}
-
-function showToast(message, isError) {
-  const toast = $("#toast");
-  toast.textContent = message;
-  toast.classList.toggle("error", Boolean(isError));
-  toast.classList.add("show");
-  window.clearTimeout(state.toastTimer);
-  state.toastTimer = window.setTimeout(() => toast.classList.remove("show"), 3200);
-}
-
 function setTheme(theme) {
-  document.body.dataset.theme = theme;
-  localStorage.setItem(THEME_KEY, theme);
-  const icon = $("#themeToggle use");
-  if (icon) icon.setAttribute("href", theme === "dark" ? "#i-sun" : "#i-moon");
-  const button = $("#themeToggle");
-  if (button) button.title = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+  document.body.dataset.theme = theme; localStorage.setItem(THEME_KEY, theme);
+  $("#themeToggle use").setAttribute("href", theme === "dark" ? "#i-sun" : "#i-moon");
 }
-
-function initTheme() {
-  setTheme(localStorage.getItem(THEME_KEY) || "dark");
-  $("#themeToggle").addEventListener("click", () => {
-    setTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
-  });
-}
-
 function initUser() {
   const username = localStorage.getItem(USER_KEY);
-  if (!username) {
-    window.location.replace("auth.html");
-    return false;
-  }
-  $("#userName").textContent = username;
-  $("#welcomeName").textContent = username;
-  $("#userAvatar").textContent = username.slice(0, 1).toUpperCase();
-  return true;
+  if (!username) { location.replace("auth.html"); return false; }
+  state.username = username; $("#userName").textContent = username; $("#welcomeName").textContent = username;
+  $("#userAvatar").textContent = username.slice(0,1).toUpperCase(); return true;
 }
-
-function localToday() {
-  const now = new Date();
-  return new Intl.DateTimeFormat("ru-RU", { weekday: "long", day: "numeric", month: "long" }).format(now);
+function fmtMinutes(value) {
+  const n = Math.max(0, Math.round(Number(value)||0)), h = Math.floor(n/60), m = n%60;
+  if (!h) return n + " минут";
+  const unit = h%10===1 && h%100!==11 ? "час" : (h%10>=2 && h%10<=4 && (h%100<12 || h%100>14) ? "часа" : "часов");
+  return n + " минут (" + h + " " + unit + (m ? " " + m + " мин" : "") + ")";
 }
-
+function shortMinutes(value) { const n=Math.max(0,Math.round(Number(value)||0)),h=Math.floor(n/60),m=n%60; return h ? h+" ч"+(m?" "+m+" мин":"") : n+" мин"; }
 function initDates() {
-  $("#todayLabel").textContent = localToday().toUpperCase();
-  $("#currentDate").textContent = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric" }).format(new Date());
+  const d=new Date();
+  $("#todayLabel").textContent=new Intl.DateTimeFormat("ru-RU",{weekday:"long",day:"numeric",month:"long"}).format(d).toUpperCase();
+  $("#currentDate").textContent=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",year:"numeric"}).format(d);
 }
-
-function normalizeHabit(habit) {
-  return {
-    id: habit.id,
-    habitname: habit.habitname || habit.name || "Без названия",
-    description: habit.description || "",
-    category: habit.category || "Другое",
-    icon: habit.icon || "🌱",
-    done: Boolean(habit.done)
-  };
+function saveHabits(){localStorage.setItem(storageKey("habits"),JSON.stringify(state.habits));}
+function saveTimes(){localStorage.setItem(storageKey("time"),JSON.stringify(state.timeEntries));}
+function loadData(){
+  try{state.habits=JSON.parse(localStorage.getItem(storageKey("habits"))||"[]");if(!Array.isArray(state.habits))state.habits=[];}catch(_){state.habits=[];}
+  try{state.timeEntries=JSON.parse(localStorage.getItem(storageKey("time"))||"[]");if(!Array.isArray(state.timeEntries))state.timeEntries=[];}catch(_){state.timeEntries=[];}
+  state.habits=state.habits.map(h=>Object.assign({id:Date.now()+Math.random(),habitname:"Без названия",description:"",category:"Другое",icon:"🌱",doneDate:null},h));
+  renderHabits();renderTime();
 }
+function isDone(h){return h.doneDate===todayKey();}
+function visibleHabits(){
+  const q=state.search.trim().toLocaleLowerCase("ru");
+  return state.habits.filter(h=>{
+    const done=isDone(h), ok=state.filter==="all"||(state.filter==="active"&&!done)||(state.filter==="done"&&done);
+    return ok && (!q || (h.habitname+" "+h.description+" "+h.category).toLocaleLowerCase("ru").includes(q));
+  });
+}
+function renderHabit(h){
+  const done=isDone(h);
+  return '<article class="habit-row '+(done?"completed":"")+'" data-habit-id="'+escapeHtml(h.id)+'">'+
+    '<div class="habit-emoji">'+escapeHtml(h.icon)+'</div><div class="habit-copy"><div class="habit-title-line"><span class="habit-name">'+escapeHtml(h.habitname)+'</span><span class="habit-category">'+escapeHtml(h.category)+'</span></div>'+
+    (h.description?'<div class="habit-description">'+escapeHtml(h.description)+'</div>':"")+'</div><div class="habit-actions">'+
+    '<button class="habit-action toggle '+(done?"is-done":"")+'" type="button" data-action="toggle"><svg class="icon"><use href="'+(done?"#i-refresh":"#i-check")+'"></use></svg><span>'+(done?"Снять":"Готово")+'</span></button>'+
+    '<button class="habit-action" type="button" data-action="edit" aria-label="Изменить"><svg class="icon"><use href="#i-edit"></use></svg></button>'+
+    '<button class="habit-action delete" type="button" data-action="delete" aria-label="Удалить"><svg class="icon"><use href="#i-trash"></use></svg></button></div></article>';
+}
+function renderCategories(){
+  const counts={};state.habits.forEach(h=>counts[h.category]=(counts[h.category]||0)+1);
+  const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);$("#categoryTotal").textContent=entries.length;
+  if(!entries.length){$("#categoryList").innerHTML='<div class="category-placeholder">Категории появятся после добавления привычек.</div>';return;}
+  const max=Math.max(...entries.map(e=>e[1]));
+  $("#categoryList").innerHTML=entries.map(e=>'<div class="category-item"><div class="category-item-label"><span class="category-dot"></span>'+escapeHtml(e[0])+'</div><span class="category-item-count">'+e[1]+'</span><div class="category-bar"><span style="width:'+Math.round(e[1]/max*100)+'%"></span></div></div>').join("");
+}
+function renderHabits(){
+  const total=state.habits.length,done=state.habits.filter(isDone).length,active=total-done,pct=total?Math.round(done/total*100):0;
+  $("#totalHabits").textContent=total;$("#doneToday").textContent=done;$("#remaining").textContent=active;
+  $("#progressValue").innerHTML=pct+'<span class="percent">%</span>';$("#progressBar").style.width=pct+"%";
+  $("#navHabitCount").textContent=total;$("#allCount").textContent=total;$("#activeCount").textContent=active;$("#doneCount").textContent=done;
+  document.querySelectorAll("[data-filter]").forEach(b=>{const selected=b.dataset.filter===state.filter;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected));});
+  const list=visibleHabits();$("#habitsList").innerHTML=list.map(renderHabit).join("");
+  const empty=state.habits.length===0;$("#emptyState").classList.toggle("hidden",list.length>0);
+  $("#emptyTitle").textContent=empty?"Здесь пока пусто":"Ничего не найдено";
+  $("#emptyDescription").textContent=empty?"Добавь первую привычку — и начни создавать свою систему.":"Попробуй изменить поиск или фильтр.";
+  $("#emptyCreateButton").classList.toggle("hidden",!empty);renderCategories();
+}
+function pickIcon(icon){state.selectedIcon=icon;document.querySelectorAll(".icon-choice").forEach(b=>b.classList.toggle("active",b.dataset.icon===icon));}
+function openHabitModal(h){
+  state.editingId=h?h.id:null;$("#habitForm").reset();
+  $("#modalTitle").textContent=h?"Изменить привычку":"Новая привычка";
+  $("#habitName").value=h?h.habitname:"";$("#habitDescription").value=h?h.description:"";
+  $("#habitCategory").value=h?h.category:"Здоровье";pickIcon(h?h.icon:"🌱");
+  $("#habitFormError").textContent="";$("#habitModal").classList.remove("hidden");document.body.classList.add("modal-open");
+  setTimeout(()=>$("#habitName").focus(),30);
+}
+function closeHabitModal(){ $("#habitModal").classList.add("hidden");document.body.classList.remove("modal-open");state.editingId=null; }
+function saveHabit(event){
+  event.preventDefault();const name=$("#habitName").value.trim();
+  if(!name){$("#habitFormError").textContent="Введи название привычки.";return;}
+  const data={habitname:name,description:$("#habitDescription").value.trim(),category:$("#habitCategory").value,icon:state.selectedIcon};
+  if(state.editingId!==null){const h=state.habits.find(x=>String(x.id)===String(state.editingId));if(h)Object.assign(h,data);showToast("Привычка обновлена.");}
+  else{state.habits.unshift(Object.assign({id:Date.now(),doneDate:null},data));showToast("Привычка добавлена.");}
+  saveHabits();closeHabitModal();renderHabits();
+}
+function toggleHabit(id){const h=state.habits.find(x=>String(x.id)===String(id));if(!h)return;h.doneDate=isDone(h)?null:todayKey();saveHabits();renderHabits();}
+function deleteHabit(id){const h=state.habits.find(x=>String(x.id)===String(id));if(!h||!confirm('Удалить привычку «'+h.habitname+'»?'))return;state.habits=state.habits.filter(x=>String(x.id)!==String(id));saveHabits();renderHabits();showToast("Привычка удалена.");}
 
-async function loadHabits() {
-  const message = $("#apiMessage");
-  message.classList.add("hidden");
-  $("#habitsList").innerHTML = '<div class="loading-row"><span class="loading-dot"></span> Загружаем привычки...</div>';
-  try {
-    const data = await apiRequest("/habits", { method: "GET" });
-    const list = Array.isArray(data) ? data : (data && (data.habits || data.items)) || [];
-    state.habits = list.map(normalizeHabit);
-    render();
-  } catch (error) {
-    state.habits = [];
-    render();
-    message.textContent = error.status === 404
-      ? "Backend пока не содержит GET /habits. Авторизация уже подключена, но для списка привычек нужно добавить API-ручки. Их контракт записан в frontend/API.md."
-      : error.message;
-    message.classList.remove("hidden");
-    if (error.status === 401) {
-      localStorage.removeItem(USER_KEY);
-      window.setTimeout(() => window.location.replace("auth.html"), 900);
+function addTime(name,work,rest,silent){
+  name=String(name||"").trim()||"Без названия";work=Math.max(0,Math.round(Number(work)||0));rest=Math.max(0,Math.round(Number(rest)||0));
+  if(work+rest<=0)return false;
+  const old=state.timeEntries.find(e=>e.name.toLocaleLowerCase("ru")===name.toLocaleLowerCase("ru"));
+  if(old){old.work+=work;old.rest+=rest;old.updatedAt=Date.now();}
+  else state.timeEntries.unshift({id:Date.now()+Math.random(),name,work,rest,updatedAt:Date.now()});
+  saveTimes();renderTime();if(!silent)showToast("Время добавлено к задаче «"+name+"».");return true;
+}
+function renderTime(){
+  const work=state.timeEntries.reduce((n,e)=>n+(Number(e.work)||0),0),rest=state.timeEntries.reduce((n,e)=>n+(Number(e.rest)||0),0);
+  $("#trackedTotal").textContent=fmtMinutes(work+rest);$("#trackedWork").textContent=shortMinutes(work);$("#trackedRest").textContent=shortMinutes(rest);
+  $("#recordsCount").textContent=state.timeEntries.length+(state.timeEntries.length===1?" задача":" задач");
+  if(!state.timeEntries.length){$("#timeRecords").innerHTML='<div class="records-empty">Здесь появится время по твоим задачам.</div>';return;}
+  $("#timeRecords").innerHTML=state.timeEntries.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).map(e=>{
+    const sum=(Number(e.work)||0)+(Number(e.rest)||0);
+    return '<article class="time-record"><div class="record-main"><strong>'+escapeHtml(e.name)+'</strong><span>'+fmtMinutes(sum)+'</span></div><div class="record-breakdown"><span>Работа: '+shortMinutes(e.work)+'</span><span>Отдых: '+shortMinutes(e.rest)+'</span><button type="button" data-delete-time="'+escapeHtml(e.id)+'">Удалить</button></div></article>';
+  }).join("");
+}
+function persistTimer(){localStorage.setItem(storageKey("pomo"),JSON.stringify({work:state.timer.work,rest:state.timer.rest,cycles:state.timer.cycles}));}
+function updateTimer(){
+  const m=Math.floor(state.timer.remaining/60),s=state.timer.remaining%60;
+  $("#timerDisplay").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+  $("#timerPhase").textContent=state.timer.phase==="rest"?"ОТДЫХ":state.timer.phase==="done"?"ГОТОВО":"РАБОТА";
+  $("#timerRound").textContent=state.timer.phase==="done"?"Все подходы завершены":"Подход "+Math.min(state.timer.completed+1,state.timer.cycles)+" из "+state.timer.cycles;
+  $("#timerRing").classList.toggle("is-rest",state.timer.phase==="rest");$("#timerRing").classList.toggle("is-done",state.timer.phase==="done");
+  $("#timerStart").disabled=state.timer.running||state.timer.phase==="done";$("#timerPause").disabled=!state.timer.running;
+}
+function resetTimer(notify){
+  state.timer.running=false;clearInterval(state.timer.interval);state.timer.interval=null;state.timer.endAt=null;
+  state.timer.completed=0;state.timer.phase="work";state.timer.remaining=state.timer.work*60;
+  $("#timerStatus").textContent="Готов к началу";updateTimer();if(notify)showToast("Таймер сброшен.");
+}
+function setPreset(value){
+  if(value==="custom"){
+    $("#customTimeRow").classList.remove("hidden");
+    state.timer.work=Math.max(1,Math.min(240,Number($("#pomoWorkMinutes").value)||50));
+    state.timer.rest=Math.max(1,Math.min(120,Number($("#pomoRestMinutes").value)||10));
+  }else{
+    const vals=value.split("-").map(Number);state.timer.work=vals[0];state.timer.rest=vals[1];
+    $("#pomoWorkMinutes").value=vals[0];$("#pomoRestMinutes").value=vals[1];$("#customTimeRow").classList.add("hidden");
+  }
+  document.querySelectorAll("[data-preset]").forEach(b=>b.classList.toggle("active",b.dataset.preset===value));
+  resetTimer(false);
+}
+function phaseFinished(){
+  state.timer.running=false;clearInterval(state.timer.interval);state.timer.interval=null;state.timer.endAt=null;
+  const task=$("#pomoTaskName").value.trim()||"Фокус";
+  if(state.timer.phase==="work"){
+    addTime(task,state.timer.work,0,true);state.timer.completed++;
+    if(state.timer.completed>=state.timer.cycles){
+      state.timer.phase="done";state.timer.remaining=0;$("#timerStatus").textContent="Отлично! Все подходы завершены.";showToast("Подходы завершены. Время сохранено.");
+    }else{
+      state.timer.phase="rest";state.timer.remaining=state.timer.rest*60;$("#timerStatus").textContent="Работа закончена. Время отдохнуть.";showToast("Рабочий интервал завершён — отдыхай.");
     }
+  }else{
+    addTime(task,0,state.timer.rest,true);state.timer.phase="work";state.timer.remaining=state.timer.work*60;
+    $("#timerStatus").textContent="Отдых закончен. Следующий подход.";showToast("Отдых завершён. Пора за работу.");
   }
+  updateTimer();
 }
-
-function getVisibleHabits() {
-  const query = state.search.trim().toLocaleLowerCase("ru");
-  return state.habits.filter((habit) => {
-    const matchesFilter = state.filter === "all" ||
-      (state.filter === "active" && !habit.done) ||
-      (state.filter === "done" && habit.done);
-    const haystack = (habit.habitname + " " + habit.description + " " + habit.category).toLocaleLowerCase("ru");
-    return matchesFilter && (!query || haystack.includes(query));
-  });
+function tickTimer(){
+  if(!state.timer.running||!state.timer.endAt)return;
+  state.timer.remaining=Math.max(0,Math.ceil((state.timer.endAt-Date.now())/1000));
+  if(state.timer.remaining===0)phaseFinished();else updateTimer();
 }
-
-function renderHabit(habit) {
-  const done = habit.done;
-  const id = escapeHtml(habit.id);
-  const label = done ? "Вернуть" : "Выполнено";
-  const toggleIcon = done ? "#i-arrow" : "#i-check";
-  return '<article class="habit-row ' + (done ? "completed" : "") + '" data-habit-id="' + id + '">' +
-    '<div class="habit-emoji" aria-hidden="true">' + escapeHtml(habit.icon) + '</div>' +
-    '<div class="habit-copy"><div class="habit-title-line"><span class="habit-name">' + escapeHtml(habit.habitname) + '</span>' +
-    '<span class="habit-category">' + escapeHtml(habit.category) + '</span></div>' +
-    (habit.description ? '<div class="habit-description">' + escapeHtml(habit.description) + '</div>' : "") +
-    '</div><div class="habit-actions">' +
-    '<button class="habit-action toggle ' + (done ? "is-done" : "") + '" type="button" data-action="toggle" aria-label="' + label + '">' +
-    '<svg class="icon"><use href="' + toggleIcon + '"></use></svg><span>' + label + '</span></button>' +
-    '<button class="habit-action" type="button" data-action="edit" aria-label="Изменить привычку"><svg class="icon"><use href="#i-edit"></use></svg></button>' +
-    '<button class="habit-action delete" type="button" data-action="delete" aria-label="Удалить привычку"><svg class="icon"><use href="#i-trash"></use></svg></button>' +
-    '</div></article>';
+function startTimer(){
+  if(state.timer.running)return;
+  state.timer.cycles=Math.max(1,Math.min(20,Number($("#pomoCycles").value)||4));
+  state.timer.work=Math.max(1,Math.min(240,Number($("#pomoWorkMinutes").value)||state.timer.work));
+  state.timer.rest=Math.max(1,Math.min(120,Number($("#pomoRestMinutes").value)||state.timer.rest));
+  if(state.timer.phase==="done")resetTimer(false);persistTimer();
+  state.timer.running=true;state.timer.endAt=Date.now()+state.timer.remaining*1000;state.timer.interval=setInterval(tickTimer,500);
+  $("#timerStatus").textContent="Идёт "+(state.timer.phase==="rest"?"отдых":"работа");updateTimer();
 }
-
-function renderCategories() {
-  const counts = {};
-  state.habits.forEach((habit) => { counts[habit.category] = (counts[habit.category] || 0) + 1; });
-  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  $("#categoryTotal").textContent = entries.length;
-  if (!entries.length) {
-    $("#categoryList").innerHTML = '<div class="category-placeholder">Категории появятся после добавления привычек.</div>';
-    return;
-  }
-  const max = Math.max.apply(null, entries.map((entry) => entry[1]));
-  $("#categoryList").innerHTML = entries.map((entry) =>
-    '<div class="category-item"><div class="category-item-label"><span class="category-dot"></span>' + escapeHtml(entry[0]) +
-    '</div><span class="category-item-count">' + entry[1] + '</span><div class="category-bar"><span style="width:' +
-    Math.round(entry[1] / max * 100) + '%"></span></div></div>'
-  ).join("");
+function pauseTimer(){
+  if(!state.timer.running)return;tickTimer();if(!state.timer.running)return;
+  state.timer.running=false;state.timer.endAt=null;clearInterval(state.timer.interval);state.timer.interval=null;
+  $("#timerStatus").textContent="Таймер на паузе";updateTimer();
 }
-
-function render() {
-  const total = state.habits.length;
-  const done = state.habits.filter((habit) => habit.done).length;
-  const active = total - done;
-  const percent = total ? Math.round(done / total * 100) : 0;
-
-  $("#totalHabits").textContent = total;
-  $("#doneToday").textContent = done;
-  $("#remaining").textContent = active;
-  $("#progressValue").innerHTML = percent + '<span class="percent">%</span>';
-  $("#progressBar").style.width = percent + "%";
-  $("#navHabitCount").textContent = total;
-  $("#allCount").textContent = total;
-  $("#activeCount").textContent = active;
-  $("#doneCount").textContent = done;
-
-  document.querySelectorAll("[data-filter]").forEach((button) => {
-    const selected = button.dataset.filter === state.filter;
-    button.classList.toggle("active", selected);
-    button.setAttribute("aria-pressed", String(selected));
-  });
-
-  const visible = getVisibleHabits();
-  $("#habitsList").innerHTML = visible.map(renderHabit).join("");
-  const noHabits = state.habits.length === 0;
-  const noMatches = !noHabits && visible.length === 0;
-  $("#emptyState").classList.toggle("hidden", visible.length > 0);
-  $("#emptyTitle").textContent = noHabits ? "Здесь пока пусто" : "Ничего не найдено";
-  $("#emptyDescription").textContent = noHabits
-    ? "Добавь первую привычку — и начни создавать свою систему."
-    : "Попробуй изменить поисковый запрос или фильтр.";
-  $("#emptyCreateButton").classList.toggle("hidden", !noHabits);
-  renderCategories();
-}
-
-function selectIcon(icon) {
-  state.selectedIcon = icon;
-  document.querySelectorAll(".icon-choice").forEach((button) => {
-    button.classList.toggle("active", button.dataset.icon === icon);
-  });
-}
-
-function openModal(habit) {
-  state.editingId = habit ? habit.id : null;
-  $("#habitForm").reset();
-  $("#modalTitle").textContent = habit ? "Изменить привычку" : "Новая привычка";
-  $("#saveHabitButton").innerHTML = habit
-    ? 'Сохранить изменения <svg class="icon"><use href="#i-arrow"></use></svg>'
-    : 'Сохранить привычку <svg class="icon"><use href="#i-arrow"></use></svg>';
-  $("#habitName").value = habit ? habit.habitname : "";
-  $("#habitDescription").value = habit ? habit.description : "";
-  $("#habitCategory").value = habit ? habit.category : "Здоровье";
-  selectIcon(habit ? habit.icon : "🌱");
-  $("#habitFormError").textContent = "";
-  $("#habitModal").classList.remove("hidden");
-  document.body.classList.add("modal-open");
-  window.setTimeout(() => $("#habitName").focus(), 40);
-}
-
-function closeModal() {
-  $("#habitModal").classList.add("hidden");
-  document.body.classList.remove("modal-open");
-  state.editingId = null;
-}
-
-async function submitHabit(event) {
-  event.preventDefault();
-  const payload = {
-    habitname: $("#habitName").value.trim(),
-    description: $("#habitDescription").value.trim(),
-    category: $("#habitCategory").value,
-    icon: state.selectedIcon,
-    done: false
-  };
-  if (!payload.habitname) {
-    $("#habitFormError").textContent = "Введи название привычки.";
-    return;
-  }
-
-  const button = $("#saveHabitButton");
-  button.disabled = true;
-  $("#habitFormError").textContent = "";
-  try {
-    if (state.editingId !== null) {
-      delete payload.done;
-      await apiRequest("/habits/" + encodeURIComponent(state.editingId), {
-        method: "PUT", body: JSON.stringify(payload)
-      });
-      showToast("Изменения сохранены.");
-    } else {
-      await apiRequest("/habits/create", {
-        method: "POST", body: JSON.stringify(payload)
-      });
-      showToast("Привычка добавлена.");
+function loadTimerSettings(){
+  try{
+    const data=JSON.parse(localStorage.getItem(storageKey("pomo"))||"null");
+    if(data){
+      state.timer.work=Math.max(1,Math.min(240,Number(data.work)||50));state.timer.rest=Math.max(1,Math.min(120,Number(data.rest)||10));
+      state.timer.cycles=Math.max(1,Math.min(20,Number(data.cycles)||4));
     }
-    closeModal();
-    await loadHabits();
-  } catch (error) {
-    $("#habitFormError").textContent = error.status === 404
-      ? "Эта API-ручка пока не добавлена в Backend. Смотри frontend/API.md."
-      : error.message;
-  } finally {
-    button.disabled = false;
-  }
+  }catch(_){}
+  $("#pomoWorkMinutes").value=state.timer.work;$("#pomoRestMinutes").value=state.timer.rest;$("#pomoCycles").value=state.timer.cycles;
+  if(state.timer.work===45&&state.timer.rest===15)setPreset("45-15");
+  else if(state.timer.work===50&&state.timer.rest===10)setPreset("50-10");
+  else{state.timer.remaining=state.timer.work*60;$("#customTimeRow").classList.remove("hidden");document.querySelectorAll("[data-preset]").forEach(b=>b.classList.toggle("active",b.dataset.preset==="custom"));}
+  updateTimer();
 }
-
-async function toggleHabit(id) {
-  try {
-    await apiRequest("/habits/" + encodeURIComponent(id) + "/toggle", { method: "POST" });
-    await loadHabits();
-  } catch (error) {
-    showToast(error.message, true);
-  }
+function initEvents(){
+  $("#themeToggle").addEventListener("click",()=>setTheme(document.body.dataset.theme==="dark"?"light":"dark"));
+  $("#openCreateButton").addEventListener("click",()=>openHabitModal(null));$("#emptyCreateButton").addEventListener("click",()=>openHabitModal(null));
+  $("#closeModalButton").addEventListener("click",closeHabitModal);$("#cancelModalButton").addEventListener("click",closeHabitModal);
+  $("#habitModal").addEventListener("click",e=>{if(e.target===$("#habitModal"))closeHabitModal();});$("#habitForm").addEventListener("submit",saveHabit);
+  $("#habitSearch").addEventListener("input",e=>{state.search=e.target.value;renderHabits();});
+  document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{state.filter=b.dataset.filter;renderHabits();}));
+  $("#iconPicker").addEventListener("click",e=>{const b=e.target.closest("[data-icon]");if(b)pickIcon(b.dataset.icon);});
+  $("#habitsList").addEventListener("click",e=>{
+    const b=e.target.closest("[data-action]");if(!b)return;const row=b.closest("[data-habit-id]");if(!row)return;const id=row.dataset.habitId;
+    if(b.dataset.action==="toggle")toggleHabit(id);if(b.dataset.action==="delete")deleteHabit(id);
+    if(b.dataset.action==="edit"){const h=state.habits.find(x=>String(x.id)===String(id));if(h)openHabitModal(h);}
+  });
+  $("#timeEntryForm").addEventListener("submit",e=>{
+    e.preventDefault();const name=$("#timeTaskName").value.trim(),work=Number($("#workMinutes").value),rest=Number($("#restMinutes").value);
+    if(!name){showToast("Введи название задачи.",true);return;}
+    if(!Number.isFinite(work)||!Number.isFinite(rest)||work<0||rest<0||work>1440||rest>1440||work+rest<=0){showToast("Укажи корректные минуты работы или отдыха.",true);return;}
+    addTime(name,work,rest,false);$("#timeEntryForm").reset();$("#workMinutes").value=0;$("#restMinutes").value=0;
+  });
+  $("#timeRecords").addEventListener("click",e=>{
+    const b=e.target.closest("[data-delete-time]");if(!b)return;
+    state.timeEntries=state.timeEntries.filter(x=>String(x.id)!==b.dataset.deleteTime);saveTimes();renderTime();showToast("Запись времени удалена.");
+  });
+  document.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click",()=>setPreset(b.dataset.preset)));
+  $("#pomoWorkMinutes").addEventListener("change",()=>{if(!$("#customTimeRow").classList.contains("hidden"))setPreset("custom");});
+  $("#pomoRestMinutes").addEventListener("change",()=>{if(!$("#customTimeRow").classList.contains("hidden"))setPreset("custom");});
+  $("#pomoCycles").addEventListener("change",()=>{state.timer.cycles=Math.max(1,Math.min(20,Number($("#pomoCycles").value)||4));$("#pomoCycles").value=state.timer.cycles;persistTimer();updateTimer();});
+  $("#timerStart").addEventListener("click",startTimer);$("#timerPause").addEventListener("click",pauseTimer);$("#timerReset").addEventListener("click",()=>resetTimer(true));
+  $("#logoutButton").addEventListener("click",()=>{pauseTimer();localStorage.removeItem(USER_KEY);location.href="auth.html";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#habitModal").classList.contains("hidden"))closeHabitModal();});
+  document.querySelectorAll(".nav-link[href^='#']").forEach(link=>link.addEventListener("click",()=>{
+    document.querySelectorAll(".nav-link[href^='#']").forEach(item=>item.classList.remove("active"));link.classList.add("active");
+  }));
 }
-
-async function deleteHabit(id) {
-  const habit = state.habits.find((item) => String(item.id) === String(id));
-  if (!habit || !window.confirm('Удалить привычку «' + habit.habitname + '»?')) return;
-  try {
-    await apiRequest("/habits/" + encodeURIComponent(id), { method: "DELETE" });
-    showToast("Привычка удалена.");
-    await loadHabits();
-  } catch (error) {
-    showToast(error.status === 404 ? "Ручка удаления пока не добавлена в Backend." : error.message, true);
-  }
+function init(){
+  if(!initUser())return;setTheme(localStorage.getItem(THEME_KEY)||"dark");initDates();initEvents();loadData();loadTimerSettings();
 }
-
-function initEvents() {
-  $("#openCreateButton").addEventListener("click", () => openModal(null));
-  $("#emptyCreateButton").addEventListener("click", () => openModal(null));
-  $("#closeModalButton").addEventListener("click", closeModal);
-  $("#cancelModalButton").addEventListener("click", closeModal);
-  $("#habitModal").addEventListener("click", (event) => {
-    if (event.target === $("#habitModal")) closeModal();
-  });
-  $("#habitForm").addEventListener("submit", submitHabit);
-  $("#habitSearch").addEventListener("input", (event) => {
-    state.search = event.target.value;
-    render();
-  });
-  document.querySelectorAll("[data-filter]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.filter = button.dataset.filter;
-      render();
-    });
-  });
-  $("#iconPicker").addEventListener("click", (event) => {
-    const button = event.target.closest("[data-icon]");
-    if (button) selectIcon(button.dataset.icon);
-  });
-  $("#habitsList").addEventListener("click", (event) => {
-    const button = event.target.closest("[data-action]");
-    if (!button) return;
-    const row = button.closest("[data-habit-id]");
-    const id = row && row.dataset.habitId;
-    if (!id) return;
-    if (button.dataset.action === "toggle") toggleHabit(id);
-    if (button.dataset.action === "delete") deleteHabit(id);
-    if (button.dataset.action === "edit") {
-      const habit = state.habits.find((item) => String(item.id) === String(id));
-      if (habit) openModal(habit);
-    }
-  });
-  $("#logoutButton").addEventListener("click", () => {
-    localStorage.removeItem(USER_KEY);
-    window.location.href = "auth.html";
-  });
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !$("#habitModal").classList.contains("hidden")) closeModal();
-  });
-}
-
-function init() {
-  if (!initUser()) return;
-  initDates();
-  initTheme();
-  initEvents();
-  loadHabits();
-}
-
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded",init);
