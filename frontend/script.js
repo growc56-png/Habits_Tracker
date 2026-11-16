@@ -3,7 +3,7 @@ const THEME_KEY = "theme";
 const $ = (selector) => document.querySelector(selector);
 const state = {
   username: "", habits: [], filter: "all", search: "", selectedIcon: "🌱", editingId: null, timeEntries: [],
-  timer: { work: 50, rest: 10, cycles: 4, completed: 0, phase: "work", remaining: 3000, endAt: null, running: false, interval: null },
+  timer: { work: 50, rest: 10, cycles: 4, completed: 0, phase: "work", remaining: 3000, endAt: null, running: false, interval: null, audioContext: null },
   toastTimer: null
 };
 function storageKey(kind) { return kind + "_" + encodeURIComponent(state.username.toLowerCase()); }
@@ -100,36 +100,61 @@ function saveHabit(event){
 function toggleHabit(id){const h=state.habits.find(x=>String(x.id)===String(id));if(!h)return;h.doneDate=isDone(h)?null:todayKey();saveHabits();renderHabits();}
 function deleteHabit(id){const h=state.habits.find(x=>String(x.id)===String(id));if(!h||!confirm('Удалить привычку «'+h.habitname+'»?'))return;state.habits=state.habits.filter(x=>String(x.id)!==String(id));saveHabits();renderHabits();showToast("Привычка удалена.");}
 
-function addTime(name,work,rest,silent){
-  name=String(name||"").trim()||"Без названия";work=Math.max(0,Math.round(Number(work)||0));rest=Math.max(0,Math.round(Number(rest)||0));
-  if(work+rest<=0)return false;
+function addTime(name,work,silent){
+  name=String(name||"").trim()||"Без названия";work=Math.max(0,Math.round(Number(work)||0));
+  if(work<=0)return false;
   const old=state.timeEntries.find(e=>e.name.toLocaleLowerCase("ru")===name.toLocaleLowerCase("ru"));
-  if(old){old.work+=work;old.rest+=rest;old.updatedAt=Date.now();}
-  else state.timeEntries.unshift({id:Date.now()+Math.random(),name,work,rest,updatedAt:Date.now()});
-  saveTimes();renderTime();if(!silent)showToast("Время добавлено к задаче «"+name+"».");return true;
+  if(old){old.work=(Number(old.work)||0)+work;old.rest=0;old.updatedAt=Date.now();}
+  else state.timeEntries.unshift({id:Date.now()+Math.random(),name,work,rest:0,updatedAt:Date.now()});
+  saveTimes();renderTime();if(!silent)showToast("Рабочее время добавлено к задаче «"+name+"».");return true;
 }
 function renderTime(){
-  const work=state.timeEntries.reduce((n,e)=>n+(Number(e.work)||0),0),rest=state.timeEntries.reduce((n,e)=>n+(Number(e.rest)||0),0);
-  $("#trackedTotal").textContent=fmtMinutes(work+rest);$("#trackedWork").textContent=shortMinutes(work);$("#trackedRest").textContent=shortMinutes(rest);
+  const work=state.timeEntries.reduce((n,e)=>n+(Number(e.work)||0),0);
+  $("#trackedTotal").textContent=fmtMinutes(work);
   $("#recordsCount").textContent=state.timeEntries.length+(state.timeEntries.length===1?" задача":" задач");
   if(!state.timeEntries.length){$("#timeRecords").innerHTML='<div class="records-empty">Здесь появится время по твоим задачам.</div>';return;}
   $("#timeRecords").innerHTML=state.timeEntries.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).map(e=>{
-    const sum=(Number(e.work)||0)+(Number(e.rest)||0);
-    return '<article class="time-record"><div class="record-main"><strong>'+escapeHtml(e.name)+'</strong><span>'+fmtMinutes(sum)+'</span></div><div class="record-breakdown"><span>Работа: '+shortMinutes(e.work)+'</span><span>Отдых: '+shortMinutes(e.rest)+'</span><button type="button" data-delete-time="'+escapeHtml(e.id)+'">Удалить</button></div></article>';
+    return '<article class="time-record"><div class="record-main"><strong>'+escapeHtml(e.name)+'</strong><span>'+fmtMinutes(e.work)+'</span></div><div class="record-breakdown"><span>Работа: '+shortMinutes(e.work)+'</span><button type="button" data-delete-time="'+escapeHtml(e.id)+'">Удалить</button></div></article>';
   }).join("");
 }
 function persistTimer(){localStorage.setItem(storageKey("pomo"),JSON.stringify({work:state.timer.work,rest:state.timer.rest,cycles:state.timer.cycles}));}
 function updateTimer(){
   const m=Math.floor(state.timer.remaining/60),s=state.timer.remaining%60;
   $("#timerDisplay").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
-  $("#timerPhase").textContent=state.timer.phase==="rest"?"ОТДЫХ":state.timer.phase==="done"?"ГОТОВО":"РАБОТА";
-  $("#timerRound").textContent=state.timer.phase==="done"?"Все подходы завершены":"Подход "+Math.min(state.timer.completed+1,state.timer.cycles)+" из "+state.timer.cycles;
-  $("#timerRing").classList.toggle("is-rest",state.timer.phase==="rest");$("#timerRing").classList.toggle("is-done",state.timer.phase==="done");
+  $("#timerPhase").textContent=state.timer.phase==="rest"?"ОТДЫХ":state.timer.phase==="transition"?"ПЕРЕХОД":state.timer.phase==="done"?"ГОТОВО":"РАБОТА";
+  $("#timerRound").textContent=state.timer.phase==="done"?"Все подходы завершены":state.timer.phase==="transition"?"Отдых начнётся через 5 секунд":state.timer.phase==="rest"?"Отдых после подхода "+state.timer.completed+" из "+state.timer.cycles:"Подход "+Math.min(state.timer.completed+1,state.timer.cycles)+" из "+state.timer.cycles;
+  $("#timerRing").classList.toggle("is-rest",state.timer.phase==="rest"||state.timer.phase==="transition");$("#timerRing").classList.toggle("is-done",state.timer.phase==="done");
   $("#timerStart").disabled=state.timer.running||state.timer.phase==="done";$("#timerPause").disabled=!state.timer.running;
 }
-function resetTimer(notify){
+function stopTimerClock(){
   state.timer.running=false;clearInterval(state.timer.interval);state.timer.interval=null;state.timer.endAt=null;
-  state.timer.completed=0;state.timer.phase="work";state.timer.remaining=state.timer.work*60;
+}
+function runTimerClock(){
+  state.timer.running=true;state.timer.endAt=Date.now()+state.timer.remaining*1000;state.timer.interval=setInterval(tickTimer,250);
+}
+function prepareTimerAudio(){
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass)return;
+  try{
+    if(!state.timer.audioContext)state.timer.audioContext=new AudioContextClass();
+    if(state.timer.audioContext.state==="suspended")state.timer.audioContext.resume().catch(()=>{});
+  }catch(_){}
+}
+function playTimerSignal(){
+  const audio=state.timer.audioContext;if(!audio)return;
+  try{
+    if(audio.state==="suspended")audio.resume().catch(()=>{});
+    const now=audio.currentTime,oscillator=audio.createOscillator(),gain=audio.createGain();
+    oscillator.type="sine";oscillator.frequency.setValueAtTime(880,now);oscillator.frequency.setValueAtTime(660,now+0.23);
+    gain.gain.setValueAtTime(0.0001,now);gain.gain.exponentialRampToValueAtTime(0.16,now+0.025);
+    gain.gain.setValueAtTime(0.16,now+0.14);gain.gain.exponentialRampToValueAtTime(0.0001,now+0.18);
+    gain.gain.setValueAtTime(0.0001,now+0.23);gain.gain.exponentialRampToValueAtTime(0.16,now+0.255);
+    gain.gain.setValueAtTime(0.16,now+0.38);gain.gain.exponentialRampToValueAtTime(0.0001,now+0.43);
+    oscillator.connect(gain);gain.connect(audio.destination);oscillator.start(now);oscillator.stop(now+0.46);
+  }catch(_){}
+}
+function resetTimer(notify){
+  stopTimerClock();state.timer.completed=0;state.timer.phase="work";state.timer.remaining=state.timer.work*60;
   $("#timerStatus").textContent="Готов к началу";updateTimer();if(notify)showToast("Таймер сброшен.");
 }
 function setPreset(value){
@@ -145,18 +170,29 @@ function setPreset(value){
   resetTimer(false);
 }
 function phaseFinished(){
-  state.timer.running=false;clearInterval(state.timer.interval);state.timer.interval=null;state.timer.endAt=null;
+  stopTimerClock();
   const task=$("#pomoTaskName").value.trim()||"Фокус";
   if(state.timer.phase==="work"){
-    addTime(task,state.timer.work,0,true);state.timer.completed++;
+    addTime(task,state.timer.work,true);state.timer.completed++;playTimerSignal();
+    state.timer.phase="transition";state.timer.remaining=5;
+    $("#timerStatus").textContent="Работа завершена. Отдых начнётся через 5 секунд.";
+    showToast("Рабочий интервал завершён.");
+    runTimerClock();
+  }else if(state.timer.phase==="transition"){
+    state.timer.phase="rest";state.timer.remaining=state.timer.rest*60;
+    $("#timerStatus").textContent="Идёт отдых.";
+    showToast("Начался отдых.");
+    runTimerClock();
+  }else if(state.timer.phase==="rest"){
     if(state.timer.completed>=state.timer.cycles){
-      state.timer.phase="done";state.timer.remaining=0;$("#timerStatus").textContent="Отлично! Все подходы завершены.";showToast("Подходы завершены. Время сохранено.");
+      state.timer.phase="done";state.timer.remaining=0;
+      $("#timerStatus").textContent="Отлично! Все подходы завершены.";
+      showToast("Все подходы завершены. Рабочее время сохранено.");
     }else{
-      state.timer.phase="rest";state.timer.remaining=state.timer.rest*60;$("#timerStatus").textContent="Работа закончена. Время отдохнуть.";showToast("Рабочий интервал завершён — отдыхай.");
+      state.timer.phase="work";state.timer.remaining=state.timer.work*60;
+      $("#timerStatus").textContent="Отдых закончен. Нажми «Старт» для следующего подхода.";
+      showToast("Отдых завершён. Готов к следующему подходу?");
     }
-  }else{
-    addTime(task,0,state.timer.rest,true);state.timer.phase="work";state.timer.remaining=state.timer.work*60;
-    $("#timerStatus").textContent="Отдых закончен. Следующий подход.";showToast("Отдых завершён. Пора за работу.");
   }
   updateTimer();
 }
@@ -170,9 +206,10 @@ function startTimer(){
   state.timer.cycles=Math.max(1,Math.min(20,Number($("#pomoCycles").value)||4));
   state.timer.work=Math.max(1,Math.min(240,Number($("#pomoWorkMinutes").value)||state.timer.work));
   state.timer.rest=Math.max(1,Math.min(120,Number($("#pomoRestMinutes").value)||state.timer.rest));
-  if(state.timer.phase==="done")resetTimer(false);persistTimer();
-  state.timer.running=true;state.timer.endAt=Date.now()+state.timer.remaining*1000;state.timer.interval=setInterval(tickTimer,500);
-  $("#timerStatus").textContent="Идёт "+(state.timer.phase==="rest"?"отдых":"работа");updateTimer();
+  if(state.timer.phase==="done")resetTimer(false);
+  persistTimer();prepareTimerAudio();runTimerClock();
+  const phaseName=state.timer.phase==="rest"?"отдых":state.timer.phase==="transition"?"переход к отдыху":"работа";
+  $("#timerStatus").textContent="Идёт "+phaseName+".";updateTimer();
 }
 function pauseTimer(){
   if(!state.timer.running)return;tickTimer();if(!state.timer.running)return;
@@ -207,10 +244,10 @@ function initEvents(){
     if(b.dataset.action==="edit"){const h=state.habits.find(x=>String(x.id)===String(id));if(h)openHabitModal(h);}
   });
   $("#timeEntryForm").addEventListener("submit",e=>{
-    e.preventDefault();const name=$("#timeTaskName").value.trim(),work=Number($("#workMinutes").value),rest=Number($("#restMinutes").value);
+    e.preventDefault();const name=$("#timeTaskName").value.trim(),work=Number($("#workMinutes").value);
     if(!name){showToast("Введи название задачи.",true);return;}
-    if(!Number.isFinite(work)||!Number.isFinite(rest)||work<0||rest<0||work>1440||rest>1440||work+rest<=0){showToast("Укажи корректные минуты работы или отдыха.",true);return;}
-    addTime(name,work,rest,false);$("#timeEntryForm").reset();$("#workMinutes").value=0;$("#restMinutes").value=0;
+    if(!Number.isFinite(work)||work<1||work>1440){showToast("Укажи рабочее время от 1 до 1440 минут.",true);return;}
+    addTime(name,work,false);$("#timeEntryForm").reset();$("#workMinutes").value=0;
   });
   $("#timeRecords").addEventListener("click",e=>{
     const b=e.target.closest("[data-delete-time]");if(!b)return;
