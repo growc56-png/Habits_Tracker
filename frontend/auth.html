@@ -1,15 +1,11 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111713">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#111713">
   <title>Вход — Habits Tracker</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <script src="auth.js" defer></script>
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="productivity.css"><script src="auth.js" defer></script>
 </head>
 <body class="auth-page" data-theme="dark">
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -20,49 +16,24 @@
     <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5 8.6 8.6 0 1 0 20.5 14.3Z"></path></symbol>
     <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.5"></circle></symbol>
   </svg>
-
   <main class="auth-layout">
     <section class="auth-aside">
       <a class="brand" href="auth.html"><span class="brand-mark"><svg class="icon"><use href="#i-mark"></use></svg></span><span>Habits<span class="brand-muted"> Tracker</span></span></a>
-      <div class="auth-story">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> ТВОЯ ЖИЗНЬ — ТВОИ ПРАВИЛА</div>
-        <h1>Сделай привычки<br>частью <span>своей жизни.</span></h1>
-        <p>Пространство, в котором маленькие ежедневные действия превращаются в заметные результаты.</p>
-        <div class="story-card">
-          <div class="story-card-icon"><svg class="icon"><use href="#i-spark"></use></svg></div>
-          <div><strong>Начни с малого</strong><span>Одна привычка. Один шаг. Один день за раз.</span></div>
-          <div class="story-decoration">01</div>
-        </div>
-      </div>
+      <div class="auth-story"><div class="eyebrow"><span class="eyebrow-dot"></span> ТВОЯ ЖИЗНЬ — ТВОИ ПРАВИЛА</div><h1>Сделай привычки<br>частью <span>своей жизни.</span></h1><p>Пространство, в котором маленькие ежедневные действия превращаются в заметные результаты.</p><div class="story-card"><div class="story-card-icon"><svg class="icon"><use href="#i-spark"></use></svg></div><div><strong>Начни с малого</strong><span>Одна привычка. Один шаг. Один день за раз.</span></div><div class="story-decoration">01</div></div></div>
       <div class="auth-aside-footer">HABITS TRACKER <span>·</span> BUILD YOUR ROUTINE</div>
     </section>
-
     <section class="auth-main">
-      <div class="auth-theme-control"><button class="icon-button" id="authThemeToggle" type="button" aria-label="Переключить тему" title="Переключить тему"><svg class="icon"><use href="#i-sun"></use></svg></button></div>
-      <div class="auth-card">
-        <div class="mobile-brand"><span class="brand-mark"><svg class="icon"><use href="#i-mark"></use></svg></span> Habits Tracker</div>
-        <div class="auth-heading">
-          <div class="section-kicker" id="authKicker">РАДЫ ТЕБЯ ВИДЕТЬ</div>
-          <h2 id="authTitle">С возвращением!</h2>
-          <p id="authSubtitle">Войди в аккаунт, чтобы продолжить свой путь.</p>
-        </div>
-
-        <div class="auth-tabs" role="tablist" aria-label="Способ авторизации">
-          <button class="auth-tab active" id="loginTab" type="button" role="tab" aria-selected="true">Войти</button>
-          <button class="auth-tab" id="registerTab" type="button" role="tab" aria-selected="false">Создать аккаунт</button>
-        </div>
-
-        <div class="auth-error hidden" id="authError" role="alert"></div>
+      <div class="auth-theme-control"><button class="icon-button" id="authThemeToggle" type="button" aria-label="Переключить тему"><svg class="icon"><use href="#i-sun"></use></svg></button></div>
+      <div class="auth-card"><div class="mobile-brand"><span class="brand-mark"><svg class="icon"><use href="#i-mark"></use></svg></span> Habits Tracker</div>
+        <div class="auth-heading"><div class="section-kicker" id="authKicker">РАДЫ ТЕБЯ ВИДЕТЬ</div><h2 id="authTitle">С возвращением!</h2><p id="authSubtitle">Войди в аккаунт, чтобы продолжить свой путь.</p></div>
+        <div class="auth-tabs" role="tablist" aria-label="Способ авторизации"><button class="auth-tab active" id="loginTab" type="button" role="tab" aria-selected="true">Войти</button><button class="auth-tab" id="registerTab" type="button" role="tab" aria-selected="false">Создать аккаунт</button></div>
+        <div class="auth-error hidden" id="authError" role="alert"></div><div class="auth-success hidden" id="authSuccess" role="status"></div>
         <form class="auth-form" id="authForm">
-          <label class="field-label" for="username">Имя пользователя</label>
-          <input class="text-input" id="username" name="username" type="text" minlength="3" maxlength="40" placeholder="Например, semen" autocomplete="username" required>
-          <label class="field-label" for="password">Пароль</label>
-          <div class="password-wrap"><input class="text-input" id="password" name="password" type="password" minlength="4" placeholder="Не менее 4 символов" autocomplete="current-password" required><button class="password-toggle" id="passwordToggle" type="button" aria-label="Показать пароль"><svg class="icon"><use href="#i-eye"></use></svg></button></div>
-          <div class="confirm-field hidden" id="confirmField"><label class="field-label" for="passwordConfirm">Повтори пароль</label><input class="text-input" id="passwordConfirm" name="passwordConfirm" type="password" minlength="4" placeholder="Введи пароль ещё раз" autocomplete="new-password"></div>
+          <label class="field-label" for="username">Имя пользователя</label><input class="text-input" id="username" name="username" type="text" minlength="3" maxlength="20" placeholder="Например, semen" autocomplete="username" required>
+          <label class="field-label" for="password">Пароль</label><div class="password-wrap"><input class="text-input" id="password" name="password" type="password" minlength="4" placeholder="Введи пароль" autocomplete="current-password" required><button class="password-toggle" id="passwordToggle" type="button" aria-label="Показать пароль"><svg class="icon"><use href="#i-eye"></use></svg></button></div>
           <button class="button button-primary auth-submit" id="authSubmit" type="submit"><span>Войти</span><svg class="icon"><use href="#i-arrow"></use></svg></button>
         </form>
-        <p class="auth-bottom-note" id="authBottomNote">Нет аккаунта? <button type="button" id="switchToRegister">Зарегистрируйся</button></p>
-        <p class="auth-security-note">Твой аккаунт доступен только после входа.</p>
+        <p class="auth-bottom-note" id="authBottomNote">Нет аккаунта? <button type="button" id="switchToRegister">Зарегистрируйся</button></p><p class="auth-security-note">Сначала создай аккаунт, затем войди с теми же данными.</p>
       </div>
     </section>
   </main>
