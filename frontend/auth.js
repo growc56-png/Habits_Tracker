@@ -1,4 +1,4 @@
-const API_BASE="http://127.0.0.1:8000",USER_KEY="username";
+const API_BASE="http://127.0.0.1:8000",USER_KEY="access_token";
 let authMode="login";
 const $=s=>document.querySelector(s);
 async function request(path,payload){
@@ -34,7 +34,9 @@ async function submitAuth(e){
       $("#password").value="";setMode("login");$("#username").value=username;$("#password").focus();
       showSuccess("Аккаунт создан. Теперь войди, используя имя пользователя и пароль.");
     }else{
-      await request("/login",{username,password});localStorage.setItem(USER_KEY,username);location.href="index.html";
+      const result=await request("/login",{username,password});
+      if(!result?.access_token)throw new Error("Backend должен вернуть access_token после входа.");
+      localStorage.setItem(USER_KEY,result.access_token);location.href="index.html";
     }
   }catch(err){showError(err.message||"Не удалось выполнить запрос. Проверь, запущен ли Backend.");}
   finally{btn.disabled=false;$("#authSubmit span").textContent=authMode==="register"?"Зарегистрироваться":"Войти";}
