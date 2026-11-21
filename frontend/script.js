@@ -1,19 +1,17 @@
-const USER_KEY = "access_token";
 const API_BASE = "http://127.0.0.1:8000";
 const THEME_KEY = "theme";
 const $ = (selector) => document.querySelector(selector);
 const state = {
-  username: "", token: "", habits: [], filter: "all", search: "", selectedIcon: "🌱", editingId: null, timeEntries: [],
+  username: "", habits: [], filter: "all", search: "", selectedIcon: "🌱", editingId: null, timeEntries: [],
   timer: { work: 50, rest: 10, cycles: 4, completed: 0, phase: "work", remaining: 3000, endAt: null, running: false, interval: null, audioContext: null },
   toastTimer: null
 };
 async function api(path, options={}) {
   const headers={"Content-Type":"application/json",...(options.headers||{})};
-  if(state.token)headers.Authorization="Bearer "+state.token;
-  const response=await fetch(API_BASE+path,{...options,headers,credentials:"omit"});
+  const response=await fetch(API_BASE+path,{...options,headers,credentials:"include"});
   const raw=await response.text();let data=null;
   try{data=raw?JSON.parse(raw):null;}catch(_){data={detail:raw};}
-  if(response.status===401){localStorage.removeItem(USER_KEY);location.replace("auth.html");throw new Error("Сессия закончилась. Войди снова.");}
+  if(response.status===401){location.replace("auth.html");throw new Error("Сессия закончилась. Войди снова.");}
   if(!response.ok)throw new Error(data?.detail||data?.message||("Ошибка API: "+response.status));
   return data;
 }
@@ -32,9 +30,6 @@ function setTheme(theme) {
   $("#themeToggle use").setAttribute("href", theme === "dark" ? "#i-sun" : "#i-moon");
 }
 async function initUser() {
-  const token=localStorage.getItem(USER_KEY);
-  if(!token){location.replace("auth.html");return false;}
-  state.token=token;
   try{
     const user=await api("/me");
     state.username=user.username||user.user?.username||"Пользователь";
@@ -279,7 +274,7 @@ function initEvents(){
   $("#pomoRestMinutes").addEventListener("change",()=>{if(!$("#customTimeRow").classList.contains("hidden"))setPreset("custom");});
   $("#pomoCycles").addEventListener("change",()=>{state.timer.cycles=Math.max(1,Math.min(20,Number($("#pomoCycles").value)||4));$("#pomoCycles").value=state.timer.cycles;persistTimer();updateTimer();});
   $("#timerStart").addEventListener("click",startTimer);$("#timerPause").addEventListener("click",pauseTimer);$("#timerReset").addEventListener("click",()=>resetTimer(true));
-  $("#logoutButton").addEventListener("click",()=>{pauseTimer();localStorage.removeItem(USER_KEY);location.href="auth.html";});
+  $("#logoutButton").addEventListener("click",()=>{pauseTimer();location.href="auth.html";});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#habitModal").classList.contains("hidden"))closeHabitModal();});
   document.querySelectorAll(".nav-link[href^='#']").forEach(link=>link.addEventListener("click",()=>{document.querySelectorAll(".nav-link[href^='#']").forEach(item=>item.classList.remove("active"));link.classList.add("active");}));
 }
