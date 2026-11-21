@@ -61,7 +61,7 @@ time_str=now.strftime('%H:%M')
 
 res_time=day+time_str
 
-async def add_habit(name:str,desc:str, category:str, icon:str ,created_at:str,db:AsyncSession):
+async def AddHabit(name:str,desc:str, category:str, icon:str ,created_at:str,db:AsyncSession):
     habit=HabitModel(name=name,description=desc,category=category,icon=icon,created_at=res_time)
     db.add(habit)
     await db.commit()
