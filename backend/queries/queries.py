@@ -1,9 +1,14 @@
+from datetime import datetime
+from babel.dates import format_date
+
 
 
 from fastapi import HTTPException
 
-from backend.models.models import UserModel,HabitModel
+from backend.models.models import UserModel,HabitModel,HabitDone,TimeDoneModel
 from backend.core.database import engine
+from backend.core.Auth import security,config
+from fastapi import Response
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,12 +34,13 @@ async def registration(username:str,password:str,db:AsyncSession):
         else:
             hash_pass=pwd.hash(password)
             user=UserModel(username=username,password=hash_pass)
+
             db.add(user)
             await db.commit()
             return {"Пользователь успешно создан"}
 
 
-async def login(username:str,password:str,db:AsyncSession):
+async def login(username:str,password:str,db:AsyncSession,response:Response):
 
     res=await db.execute(select(UserModel).where(UserModel.username==username))
     if_good=res.scalars().first()
@@ -44,5 +50,23 @@ async def login(username:str,password:str,db:AsyncSession):
         if not pwd.verify(password,passwrd):
             raise HTTPException(status_code=401,detail='Incorrent login or password')
         else:
+            token=security.create_access_token(uid=username)
+            response.set_cookie(config.JWT_ACCESS_COOKIE_NAME,token)
             return {"Успешный вход"}
+
+now=datetime.now()
+
+day=format_date(now,format='EEEE', locale='ru')
+time_str=now.strftime('%H:%M')
+
+res_time=day+time_str
+
+async def add_habit(name:str,desc:str, category:str, icon:str ,created_at:str,db:AsyncSession):
+    habit=HabitModel(name=name,description=desc,category=category,icon=icon,created_at=res_time)
+    db.add(habit)
+    await db.commit()
+
+    return {"Привычка успешно добавлена"}
+
+
              
