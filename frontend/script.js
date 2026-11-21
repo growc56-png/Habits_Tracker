@@ -10,7 +10,7 @@ const state = {
 async function api(path, options={}) {
   const headers={"Content-Type":"application/json",...(options.headers||{})};
   if(state.token)headers.Authorization="Bearer "+state.token;
-  const response=await fetch(API_BASE+path,{...options,headers});
+  const response=await fetch(API_BASE+path,{...options,headers,credentials:"omit"});
   const raw=await response.text();let data=null;
   try{data=raw?JSON.parse(raw):null;}catch(_){data={detail:raw};}
   if(response.status===401){localStorage.removeItem(USER_KEY);location.replace("auth.html");throw new Error("Сессия закончилась. Войди снова.");}
