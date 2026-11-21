@@ -1,8 +1,8 @@
-const API_BASE="http://127.0.0.1:8000",USER_KEY="access_token";
+const API_BASE="http://127.0.0.1:8000";
 let authMode="login";
 const $=s=>document.querySelector(s);
 async function request(path,payload){
-  const res=await fetch(API_BASE+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload),credentials:"omit"});
+  const res=await fetch(API_BASE+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload),credentials:"include"});
   const raw=await res.text();let data=null;try{data=raw?JSON.parse(raw):null;}catch(_){data={detail:raw};}
   if(!res.ok)throw new Error((data&&(data.detail||data.message||data.error))||"Ошибка сервера ("+res.status+")");
   return data;
@@ -34,9 +34,8 @@ async function submitAuth(e){
       $("#password").value="";setMode("login");$("#username").value=username;$("#password").focus();
       showSuccess("Аккаунт создан. Теперь войди, используя имя пользователя и пароль.");
     }else{
-      const result=await request("/login",{username,password});
-      if(!result?.access_token)throw new Error("Backend должен вернуть access_token после входа.");
-      localStorage.setItem(USER_KEY,result.access_token);location.href="index.html";
+      await request("/login",{username,password});
+      location.href="index.html";
     }
   }catch(err){showError(err.message||"Не удалось выполнить запрос. Проверь, запущен ли Backend.");}
   finally{btn.disabled=false;$("#authSubmit span").textContent=authMode==="register"?"Зарегистрироваться":"Войти";}
