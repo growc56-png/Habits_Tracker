@@ -2,7 +2,7 @@ const API_BASE="http://127.0.0.1:8000",USER_KEY="access_token";
 let authMode="login";
 const $=s=>document.querySelector(s);
 async function request(path,payload){
-  const res=await fetch(API_BASE+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  const res=await fetch(API_BASE+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload),credentials:"omit"});
   const raw=await res.text();let data=null;try{data=raw?JSON.parse(raw):null;}catch(_){data={detail:raw};}
   if(!res.ok)throw new Error((data&&(data.detail||data.message||data.error))||"Ошибка сервера ("+res.status+")");
   return data;
