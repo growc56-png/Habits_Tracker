@@ -279,6 +279,11 @@ function initEvents(){
   document.querySelectorAll(".nav-link[href^='#']").forEach(link=>link.addEventListener("click",()=>{document.querySelectorAll(".nav-link[href^='#']").forEach(item=>item.classList.remove("active"));link.classList.add("active");}));
 }
 async function init(){
-  if(!await initUser())return;setTheme(localStorage.getItem(THEME_KEY)||"dark");initDates();initEvents();await loadData();loadTimerSettings();
+  setTheme(localStorage.getItem(THEME_KEY)||"dark");
+  initDates();
+  initEvents();
+  loadTimerSettings();
+  if(!await initUser())return;
+  await loadData();
 }
 document.addEventListener("DOMContentLoaded",init);
