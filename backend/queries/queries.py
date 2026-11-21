@@ -57,11 +57,11 @@ async def login(username:str,password:str,db:AsyncSession,response:Response):
 now=datetime.now()
 
 day=format_date(now,format='EEEE', locale='ru')
-time_str=now.strftime('%H:%M')
+time_str=now.strftime(' %H:%M')
 
 res_time=day+time_str
 
-async def AddHabit(name:str,desc:str, category:str, icon:str ,created_at:str,db:AsyncSession):
+async def AddHabit(name:str,desc:str, category:str, icon:str ,db:AsyncSession):
     habit=HabitModel(name=name,description=desc,category=category,icon=icon,created_at=res_time)
     db.add(habit)
     await db.commit()

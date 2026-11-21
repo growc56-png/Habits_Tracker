@@ -47,7 +47,7 @@ async def log(user_reg:UserSchema,response:Response,db:AsyncSession=Depends(get_
 
 @router.post('/habits')
 async def add_habit(hb:HabitSchema,db:AsyncSession=Depends(get_db)):
-    habit=await AddHabit(hb.name,hb.description,hb.category,hb.icon,hb.created_at,db)
+    habit=await AddHabit(hb.name,hb.description,hb.category,hb.icon,db=db)
     return habit
 
 

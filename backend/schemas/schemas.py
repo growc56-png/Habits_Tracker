@@ -10,6 +10,6 @@ class HabitSchema(BaseModel):
     description:str
     category: str
     icon:str
-    created_at:str
+
 
 
