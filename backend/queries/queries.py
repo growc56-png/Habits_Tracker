@@ -3,6 +3,8 @@ from babel.dates import format_date
 
 
 
+
+
 from fastapi import HTTPException
 
 from backend.models.models import UserModel,HabitModel,HabitDone,TimeDoneModel
@@ -61,8 +63,11 @@ time_str=now.strftime(' %H:%M')
 
 res_time=day+time_str
 
-async def AddHabit(name:str,desc:str, category:str, icon:str ,db:AsyncSession):
-    habit=HabitModel(name=name,description=desc,category=category,icon=icon,created_at=res_time)
+async def AddHabit(user_id:int,name:str,desc:str, category:str, icon:str ,db:AsyncSession):
+
+    
+    
+    habit=HabitModel(user_id=user_id,name=name,description=desc,category=category,icon=icon,created_at=res_time)
     db.add(habit)
     await db.commit()
 
