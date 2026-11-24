@@ -72,6 +72,8 @@ async def AddHabit(user_id:int,name:str,desc:str, category:str, icon:str ,db:Asy
     await db.commit()
 
     return {"Привычка успешно добавлена"}
+            
+
 
 
              

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from backend.core.Auth import security
 
 # Base — база моделей для создания таблиц, UserModel — таблица пользователей
-from backend.models.models import Base, UserModel
+from backend.models.models import Base, UserModel,HabitModel,HabitDone
 # движок БД и зависимость get_db (выдаёт сессию БД)
 from backend.core.database import async_session, engine, get_db
 # Pydantic-схемы: валидируют данные из запроса (username, password, name и т.д.)
@@ -81,3 +81,24 @@ async def add_habit(
         db=db,
     )
     return habit
+
+
+
+@router.get('/habits')
+async def get_habits(db:AsyncSession=Depends(get_db),credentials=Depends(security.access_token_required)):
+    username=credentials.sub
+
+    res = await db.execute(select(UserModel).where(UserModel.username==username))
+    user=res.scalars().first()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Пользователь не найден")
+
+
+
+    habits_users=await db.execute(select(HabitModel).where(HabitModel.user_id==user.id))
+
+    habits_all=habits_users.scalars().all()
+
+    return habits_all
+
+
