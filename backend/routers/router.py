@@ -112,9 +112,8 @@ async def delete_habit(habit_id:int,db:AsyncSession=Depends(get_db),credentials=
     if user is None:
         raise HTTPException(status_code=401,detail='Пользователь не найден')
 
-    del_habit=DeleteHabit(user_id=user.id,habit_id=habit_id,db=db)
-    await db.delete(del_habit)
-    await db.commit()
+    del_habit=await DeleteHabit(user_id=user.id,habit_id=habit_id,db=db)
+
 
     return {"Привычка удалена"}
 

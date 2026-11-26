@@ -80,6 +80,9 @@ async def DeleteHabit(user_id:int, habit_id:int,db:AsyncSession):
 
     res=habit.scalars().first()
 
+    if res is None:
+        return False
+
     await db.delete(res)
     await db.commit()
 
