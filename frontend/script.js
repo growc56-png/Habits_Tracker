@@ -29,13 +29,12 @@ function setTheme(theme) {
   document.body.dataset.theme = theme; localStorage.setItem(THEME_KEY, theme);
   $("#themeToggle use").setAttribute("href", theme === "dark" ? "#i-sun" : "#i-moon");
 }
-async function initUser() {
-  try{
-    const user=await api("/me");
-    state.username=user.username||user.user?.username||"Пользователь";
-    $("#userName").textContent=state.username;$("#welcomeName").textContent=state.username;
-    $("#userAvatar").textContent=state.username.slice(0,1).toUpperCase();return true;
-  }catch(error){showToast(error.message,true);return false;}
+function initUser() {
+  // В текущем backend пока нет GET /me, поэтому не блокируем загрузку привычек.
+  state.username = "Мой аккаунт";
+  $("#userName").textContent = state.username;
+  $("#welcomeName").textContent = "друг";
+  $("#userAvatar").textContent = "Я";
 }
 function fmtMinutes(value) {
   const n = Math.max(0, Math.round(Number(value)||0)), h = Math.floor(n/60), m = n%60;
@@ -50,12 +49,29 @@ function initDates() {
   $("#currentDate").textContent=new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",year:"numeric"}).format(d);
 }
 async function loadData(){
-  try{
-    const [habitsData,entriesData]=await Promise.all([api("/habits"),api("/time-entries")]);
-    state.habits=(Array.isArray(habitsData)?habitsData:(habitsData.items||[])).map(normalizeHabit);
-    state.timeEntries=(Array.isArray(entriesData)?entriesData:(entriesData.items||[])).map(normalizeEntry);
-    renderHabits();renderTime();
-  }catch(error){showToast("Не удалось загрузить данные: "+error.message,true);}
+  // Привычки загружаются отдельно: ошибка тайм-трекера не должна ломать главный экран.
+  try {
+    const habitsData = await api("/habits");
+    const items = Array.isArray(habitsData) ? habitsData : (habitsData?.items || []);
+    state.habits = items.map(normalizeHabit);
+    renderHabits();
+  } catch (error) {
+    showToast("Не удалось загрузить привычки: " + error.message, true);
+    return;
+  }
+
+  // Ручки времени в backend могут быть ещё не готовы — это не мешает привычкам.
+  try {
+    const entriesData = await api("/time-entries");
+    const items = Array.isArray(entriesData) ? entriesData : (entriesData?.items || []);
+    state.timeEntries = items.map(normalizeEntry);
+  } catch (error) {
+    state.timeEntries = [];
+    if (!String(error.message).includes("404")) {
+      showToast("Привычки загружены. Учёт времени пока недоступен: " + error.message, true);
+    }
+  }
+  renderTime();
 }
 function isDone(h){return h.doneDate===todayKey();}
 function visibleHabits(){
@@ -70,9 +86,9 @@ function renderHabit(h){
   return '<article class="habit-row '+(done?"completed":"")+'" data-habit-id="'+escapeHtml(h.id)+'">'+
     '<div class="habit-emoji">'+escapeHtml(h.icon)+'</div><div class="habit-copy"><div class="habit-title-line"><span class="habit-name">'+escapeHtml(h.habitname)+'</span><span class="habit-category">'+escapeHtml(h.category)+'</span></div>'+
     (h.description?'<div class="habit-description">'+escapeHtml(h.description)+'</div>':"")+'</div><div class="habit-actions">'+
-    '<button class="habit-action toggle '+(done?"is-done":"")+'" type="button" data-action="toggle"><svg class="icon"><use href="'+(done?"#i-refresh":"#i-check")+'"></use></svg><span>'+(done?"Снять":"Готово")+'</span></button>'+
-    '<button class="habit-action" type="button" data-action="edit" aria-label="Изменить"><svg class="icon"><use href="#i-edit"></use></svg></button>'+
-    '<button class="habit-action delete" type="button" data-action="delete" aria-label="Удалить"><svg class="icon"><use href="#i-trash"></use></svg></button></div></article>';
+    '<button class="habit-action toggle '+(done?"is-done":"")+'" type="button" disabled title="Сначала добавь backend-ручку отметки выполнения"><svg class="icon"><use href="'+(done?"#i-refresh":"#i-check")+'"></use></svg><span>'+(done?"Готово":"Отметить")+'</span></button>'+
+    '<button class="habit-action" type="button" disabled aria-label="Изменить" title="Backend-ручка редактирования пока не подключена"><svg class="icon"><use href="#i-edit"></use></svg></button>'+
+    '<button class="habit-action delete" type="button" disabled aria-label="Удалить" title="Backend-ручка удаления пока не подключена"><svg class="icon"><use href="#i-trash"></use></svg></button></div></article>';
 }
 function renderCategories(){
   const counts={};state.habits.forEach(h=>counts[h.category]=(counts[h.category]||0)+1);
@@ -283,7 +299,7 @@ async function init(){
   initDates();
   initEvents();
   loadTimerSettings();
-  if(!await initUser())return;
+  initUser();
   await loadData();
 }
 document.addEventListener("DOMContentLoaded",init);
