@@ -25,23 +25,24 @@ from passlib.context import CryptContext
 pwd=CryptContext(schemes=['pbkdf2_sha256'],deprecated="auto")
 
 
-
+#Registration
 async def registration(username:str,password:str,db:AsyncSession):
-    async with engine.connect() as conn:
-        res=await db.execute(select(UserModel).where(UserModel.username==username))
-        exist_or_not=res.scalars().first()
+    #making statement
+    res=await db.execute(select(UserModel).where(UserModel.username==username))
+    #take results
+    exist_or_not=res.scalars().first()
+    #if there is a user who has a same name, therefore there will be error, else user will be registered
+    if exist_or_not!=None:
+        return {"Пользователь с таким именем уже существует."}
+    else:
+        hash_pass=pwd.hash(password)
+        user=UserModel(username=username,password=hash_pass)
 
-        if exist_or_not!=None:
-            return {"Пользователь с таким именем уже существует."}
-        else:
-            hash_pass=pwd.hash(password)
-            user=UserModel(username=username,password=hash_pass)
+        db.add(user)
+        await db.commit()
+        return {"Пользователь успешно создан"}
 
-            db.add(user)
-            await db.commit()
-            return {"Пользователь успешно создан"}
-
-
+#Login 
 async def login(username:str,password:str,db:AsyncSession,response:Response):
 
     res=await db.execute(select(UserModel).where(UserModel.username==username))
@@ -63,16 +64,24 @@ time_str=now.strftime(' %H:%M')
 
 res_time=day+time_str
 
+
+#Add Habit
 async def AddHabit(user_id:int,name:str,desc:str, category:str, icon:str ,db:AsyncSession):
 
-    
-    
     habit=HabitModel(user_id=user_id,name=name,description=desc,category=category,icon=icon,created_at=res_time)
     db.add(habit)
     await db.commit()
 
     return {"Привычка успешно добавлена"}
-            
+
+
+async def DeleteHabit(user_id:int, habit_id:int,db:AsyncSession):
+    habit=await db.execute(select(HabitModel).where(HabitModel.id==habit_id,HabitModel.user_id==user_id))
+
+    res=habit.scalars().first()
+
+    await db.delete(res)
+    await db.commit()
 
 
 
