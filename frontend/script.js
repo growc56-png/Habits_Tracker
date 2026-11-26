@@ -86,9 +86,9 @@ function renderHabit(h){
   return '<article class="habit-row '+(done?"completed":"")+'" data-habit-id="'+escapeHtml(h.id)+'">'+
     '<div class="habit-emoji">'+escapeHtml(h.icon)+'</div><div class="habit-copy"><div class="habit-title-line"><span class="habit-name">'+escapeHtml(h.habitname)+'</span><span class="habit-category">'+escapeHtml(h.category)+'</span></div>'+
     (h.description?'<div class="habit-description">'+escapeHtml(h.description)+'</div>':"")+'</div><div class="habit-actions">'+
-    '<button class="habit-action toggle '+(done?"is-done":"")+'" type="button" disabled title="Сначала добавь backend-ручку отметки выполнения"><svg class="icon"><use href="'+(done?"#i-refresh":"#i-check")+'"></use></svg><span>'+(done?"Готово":"Отметить")+'</span></button>'+
-    '<button class="habit-action" type="button" disabled aria-label="Изменить" title="Backend-ручка редактирования пока не подключена"><svg class="icon"><use href="#i-edit"></use></svg></button>'+
-    '<button class="habit-action delete" type="button" disabled aria-label="Удалить" title="Backend-ручка удаления пока не подключена"><svg class="icon"><use href="#i-trash"></use></svg></button></div></article>';
+    '<button class="habit-action toggle '+(done?"is-done":"")+'" type="button" data-action="toggle" aria-label="'+(done?"Снять отметку":"Отметить выполненной")+'" title="'+(done?"Снять отметку за сегодня":"Отметить выполнение за сегодня")+'"><svg class="icon"><use href="'+(done?"#i-refresh":"#i-check")+'"></use></svg><span>'+(done?"Готово":"Отметить")+'</span></button>'+
+    '<button class="habit-action" type="button" data-action="edit" aria-label="Изменить привычку" title="Изменить привычку"><svg class="icon"><use href="#i-edit"></use></svg></button>'+
+    '<button class="habit-action delete" type="button" data-action="delete" aria-label="Удалить привычку" title="Удалить привычку"><svg class="icon"><use href="#i-trash"></use></svg></button></div></article>';
 }
 function renderCategories(){
   const counts={};state.habits.forEach(h=>counts[h.category]=(counts[h.category]||0)+1);
