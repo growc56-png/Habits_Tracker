@@ -310,3 +310,122 @@ select.text-input { appearance: auto; }
 
 .loading-row { display:flex; align-items:center; justify-content:center; gap:10px; min-height:125px; color:var(--muted); font-size:11px; }
 .loading-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 5px var(--green-soft); }
+
+
+/* Небольшие улучшения удобства и доступности интерфейса */
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.button, .icon-button, .filter-tab, .habit-action, .preset-button {
+  transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease, opacity .18s ease;
+}
+.habit-action:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+}
+.habit-row {
+  min-height: 76px;
+}
+.habit-name {
+  font-size: 13px;
+}
+.habit-description {
+  font-size: 11px;
+}
+.habit-category {
+  font-size: 9px;
+}
+.search-box {
+  min-width: 190px;
+  min-height: 38px;
+}
+.filter-tab {
+  min-height: 36px;
+  padding-inline: 12px;
+}
+.text-input {
+  font-size: 14px;
+}
+.empty-state p, .category-placeholder {
+  font-size: 11px;
+}
+@media (max-width: 680px) {
+  .main-area {
+    margin-left: 0;
+    padding-bottom: 78px;
+  }
+  .page-wrap {
+    padding: 22px 15px 25px;
+  }
+  .topbar {
+    padding-inline: 15px;
+  }
+  .topbar-path {
+    font-size: 11px;
+  }
+  .user-meta {
+    display: none;
+  }
+  .welcome-block {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .welcome-block .button {
+    width: 100%;
+  }
+  .stats-grid {
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 14px;
+  }
+  .content-grid {
+    gap: 14px;
+  }
+  .habits-panel {
+    padding: 16px 12px;
+  }
+  .panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .habit-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .filter-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .filter-tab {
+    flex: 1 0 auto;
+  }
+  .search-box {
+    width: 100%;
+    min-width: 0;
+  }
+  .habit-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 9px;
+    padding: 11px;
+  }
+  .habit-copy {
+    flex: 1 1 calc(100% - 55px);
+  }
+  .habit-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-left: 50px;
+  }
+  .right-column {
+    grid-template-columns: 1fr;
+  }
+  .modal-card {
+    padding: 24px 18px;
+  }
+}
