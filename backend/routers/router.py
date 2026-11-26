@@ -102,7 +102,7 @@ async def get_habits(db:AsyncSession=Depends(get_db),credentials=Depends(securit
     return habits_all
 
 
-@router.delete('/habits/{id}')
+@router.delete('/habits/{habit_id}')
 async def delete_habit(habit_id:int,db:AsyncSession=Depends(get_db),credentials=Depends(security.access_token_required)):
     username=credentials.sub
 
@@ -113,6 +113,8 @@ async def delete_habit(habit_id:int,db:AsyncSession=Depends(get_db),credentials=
         raise HTTPException(status_code=401,detail='Пользователь не найден')
 
     del_habit=DeleteHabit(user_id=user.id,habit_id=habit_id,db=db)
+    await db.delete(del_habit)
+    await db.commit()
 
     return {"Привычка удалена"}
 
