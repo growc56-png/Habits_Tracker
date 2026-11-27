@@ -132,7 +132,7 @@ async def Change_Habit(hab:HabitSchema,habit_id:int,db:AsyncSession=Depends(get_
 
 
 
-    habit=await ChangeHabit(user_id=user_id,habit_id=habit_id,name=hab.name,description=hab.description,category=hab.category,icon=hab.category,db=db)
+    habit=await ChangeHabit(user_id=user_id,habit_id=habit_id,name=hab.name,description=hab.description,category=hab.category,icon=hab.icon,db=db)
 
     await db.commit()
 

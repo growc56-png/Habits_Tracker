@@ -94,10 +94,10 @@ async def ChangeHabit(user_id:int,habit_id:int,name:str,description:str,category
     if result is None:
         raise HTTPException(status_code=401,detail='Привычка не найдена')
 
-    HabitModel.name=name
-    HabitModel.description=description
-    HabitModel.category=category
-    HabitModel.icon=icon
+    result.name=name
+    result.description=description
+    result.category=category
+    result.icon=icon
 
     await db.commit()
     return {"Привычка успешно изменена"}
