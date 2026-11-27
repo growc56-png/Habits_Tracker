@@ -87,5 +87,22 @@ async def DeleteHabit(user_id:int, habit_id:int,db:AsyncSession):
     await db.commit()
 
 
+async def ChangeHabit(user_id:int,habit_id:int,name:str,description:str,category:str,icon:str,db:AsyncSession):
+    res=await db.execute(select(HabitModel).where(HabitModel.id==habit_id,HabitModel.user_id==user_id))
+    result=res.scalars().first()
+
+    if result is None:
+        raise HTTPException(status_code=401,detail='Привычка не найдена')
+
+    HabitModel.name=name
+    HabitModel.description=description
+    HabitModel.category=category
+    HabitModel.icon=icon
+
+    await db.commit()
+    return {"Привычка успешно изменена"}
+
+
+
 
              

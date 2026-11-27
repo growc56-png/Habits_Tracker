@@ -12,7 +12,7 @@ from backend.schemas.schemas import UserSchema, HabitSchema
 # Response нужен, чтобы login мог положить токен в куки
 from fastapi import Response
 # наши функции работы с БД
-from backend.queries.queries import registration, login, AddHabit,DeleteHabit
+from backend.queries.queries import registration, login, AddHabit,DeleteHabit,ChangeHabit
 
 # тип сессии SQLAlchemy — просто подсказка типов
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -117,5 +117,25 @@ async def delete_habit(habit_id:int,db:AsyncSession=Depends(get_db),credentials=
 
     return {"Привычка удалена"}
 
+
+@router.patch("/habits/{habit_id}")
+async def Change_Habit(hab:HabitSchema,habit_id:int,db:AsyncSession=Depends(get_db),credentials=Depends(security.access_token_required)):
+    username=credentials.sub
+
+    res=await db.execute(select(UserModel).where(UserModel.username==username))
+    user=res.scalars().first()
+
+    if user is None:
+        raise HTTPException(status_code=401,detail='Пользователь не найден')
+
+    user_id=user.id
+
+
+
+    habit=await ChangeHabit(user_id=user_id,habit_id=habit_id,name=hab.name,description=hab.description,category=hab.category,icon=hab.category,db=db)
+
+    await db.commit()
+
+    return habit
     
 
