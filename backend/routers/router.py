@@ -140,7 +140,7 @@ async def Change_Habit(hab:HabitSchema,habit_id:int,db:AsyncSession=Depends(get_
 
 
 @router.post('/habits/{habit_id}/toggle')
-async def Complete_Habit(habit_id:int,user_id:int,db:AsyncSession=Depends(get_db),credentials=Depends(security.access_token_required)):
+async def Complete_Habit(habit_id:int,db:AsyncSession=Depends(get_db),credentials=Depends(security.access_token_required)):
     username=credentials.sub
 
     res= await db.execute(select(UserModel).where(UserModel.username==username))
@@ -152,8 +152,5 @@ async def Complete_Habit(habit_id:int,user_id:int,db:AsyncSession=Depends(get_db
     user_id=user.id
 
     habit=await CompleteHabit(user_id=user_id,habit_id=habit_id,db=db)
-
-    await db.commit()
-
     return habit
 

@@ -108,6 +108,8 @@ async def CompleteHabit(user_id:int,habit_id:int,db:AsyncSession):
     now_date=now.strftime(' %d.%m.%Y')
     res= await db.execute(select(HabitDone).where(HabitDone.user_id==user_id,HabitDone.habit_id==habit_id,HabitDone.completed_on==now_date))
     result =res.scalars().first()
+
+    
     # If there is a habit, we should delete it, and make new but we should make inverse complete(if there was true we need to make false)
     if result is not None:
         await db.delete(result)
