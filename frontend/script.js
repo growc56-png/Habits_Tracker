@@ -29,12 +29,21 @@ function setTheme(theme) {
   document.body.dataset.theme = theme; localStorage.setItem(THEME_KEY, theme);
   $("#themeToggle use").setAttribute("href", theme === "dark" ? "#i-sun" : "#i-moon");
 }
-function initUser() {
-  // В текущем backend пока нет GET /me, поэтому не блокируем загрузку привычек.
+async function initUser() {
+  // Пока backend не реализовал GET /me, интерфейс продолжит работать с запасным именем.
   state.username = "Мой аккаунт";
+  try {
+    const user = await api("/me");
+    state.username = user?.username || state.username;
+  } catch (error) {
+    // 404 означает, что backend ещё не добавил /me. Остальные ошибки показываем.
+    if (!String(error.message).includes("404")) {
+      showToast("Не удалось загрузить профиль: " + error.message, true);
+    }
+  }
   $("#userName").textContent = state.username;
-  $("#welcomeName").textContent = "друг";
-  $("#userAvatar").textContent = "Я";
+  $("#welcomeName").textContent = state.username === "Мой аккаунт" ? "друг" : state.username;
+  $("#userAvatar").textContent = state.username === "Мой аккаунт" ? "Я" : state.username.charAt(0).toUpperCase();
 }
 function fmtMinutes(value) {
   const n = Math.max(0, Math.round(Number(value)||0)), h = Math.floor(n/60), m = n%60;
@@ -299,7 +308,7 @@ async function init(){
   initDates();
   initEvents();
   loadTimerSettings();
-  initUser();
+  await initUser();
   await loadData();
 }
 document.addEventListener("DOMContentLoaded",init);
